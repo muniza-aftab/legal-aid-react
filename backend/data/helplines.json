@@ -1,0 +1,70 @@
+{
+  "Criminal Law": {
+    "High": [
+      {"icon": "🚔", "label": "Police Emergency",        "number": "15"},
+      {"icon": "⚖️", "label": "Legal Aid (HRCP)",         "number": "042-35761999"},
+      {"icon": "📞", "label": "Madadgaar Helpline",       "number": "1098"}
+    ],
+    "Medium": [
+      {"icon": "🚔", "label": "Police Emergency",         "number": "15"},
+      {"icon": "⚖️", "label": "Legal Aid",                "number": "1099"}
+    ]
+  },
+  "Harassment": {
+    "High": [
+      {"icon": "👩", "label": "Women Helpline",           "number": "1099"},
+      {"icon": "🛡️", "label": "Cyber Crime (FIA)",        "number": "9911"},
+      {"icon": "🚔", "label": "Police Emergency",         "number": "15"}
+    ],
+    "Medium": [
+      {"icon": "👩", "label": "Women Helpline",           "number": "1099"},
+      {"icon": "🛡️", "label": "Cyber Crime (FIA)",        "number": "9911"}
+    ]
+  },
+  "Family Law": {
+    "High": [
+      {"icon": "👩", "label": "Women Helpline",           "number": "1099"},
+      {"icon": "📞", "label": "Madadgaar",                "number": "1098"},
+      {"icon": "🚔", "label": "Police (Domestic Violence)","number": "15"}
+    ],
+    "Medium": [
+      {"icon": "👩", "label": "Women Helpline",           "number": "1099"},
+      {"icon": "📞", "label": "Madadgaar",                "number": "1098"}
+    ]
+  },
+  "Cybercrime": {
+    "High": [
+      {"icon": "🛡️", "label": "FIA Cyber Crime Wing",     "number": "9911"},
+      {"icon": "📞", "label": "Digital Rights Helpline",  "number": "0800-REPORT"}
+    ],
+    "Medium": [
+      {"icon": "🛡️", "label": "FIA Cyber Crime Wing",     "number": "9911"}
+    ]
+  },
+  "Labour Law": {
+    "High": [
+      {"icon": "💼", "label": "Labour Department Helpline","number": "111-152-152"},
+      {"icon": "⚖️", "label": "Legal Aid",                "number": "1099"}
+    ],
+    "Medium": [
+      {"icon": "💼", "label": "Labour Department Helpline","number": "111-152-152"}
+    ]
+  },
+  "Property Law": {
+    "High": [
+      {"icon": "⚖️", "label": "Legal Aid",                "number": "1099"},
+      {"icon": "🏛️", "label": "HRCP Legal Team",          "number": "042-35761999"}
+    ]
+  },
+  "Property / Tenancy": {
+    "High": [
+      {"icon": "⚖️", "label": "Legal Aid",                "number": "1099"}
+    ]
+  },
+  "Constitutional Law": {
+    "High": [
+      {"icon": "🏛️", "label": "HRCP",                     "number": "042-35761999"},
+      {"icon": "⚖️", "label": "Legal Aid",                "number": "1099"}
+    ]
+  }
+}

@@ -1,0 +1,51 @@
+[
+  {
+    "name": "Aurat Foundation",
+    "city": "Karachi",
+    "type": "Women Rights",
+    "phone": "021-35361055",
+    "website": "https://www.af.org.pk"
+  },
+  {
+    "name": "Edhi Foundation",
+    "city": "Karachi",
+    "type": "Emergency / Social Services",
+    "phone": "115",
+    "website": "https://edhi.org"
+  },
+  {
+    "name": "Lawyers for Human Rights and Legal Aid (LHRLA)",
+    "city": "Karachi",
+    "type": "Legal Aid",
+    "phone": "021-35215064",
+    "website": ""
+  },
+  {
+    "name": "Human Rights Commission of Pakistan (HRCP)",
+    "city": "Lahore",
+    "type": "Human Rights",
+    "phone": "042-35761999",
+    "website": "https://hrcp-web.org"
+  },
+  {
+    "name": "Rozan Counseling & Training",
+    "city": "Islamabad",
+    "type": "Women & Child Rights",
+    "phone": "051-2890505",
+    "website": "https://rozan.org"
+  },
+  {
+    "name": "Madadgaar National Helpline",
+    "city": "Nationwide",
+    "type": "Child & Family Protection",
+    "phone": "1098",
+    "website": ""
+  },
+  {
+    "name": "War Against Rape (WAR)",
+    "city": "Karachi",
+    "type": "Gender Violence",
+    "phone": "021-35830618",
+    "website": "https://war.org.pk"
+  }
+]
