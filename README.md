@@ -6,6 +6,7 @@
 A full-stack AI legal aid application that helps Pakistani citizens understand their legal rights. Users describe a legal problem in English or Urdu and receive a risk assessment, applicable law citations, rights summary, recommended NGOs, and a matched lawyer list — all driven by retrieval-augmented generation over a corpus of Pakistani law documents.
 
 ---
+Live Demo: https://legal-aid-react.vercel.app/
 
 ## Features
 
