@@ -247,14 +247,14 @@ function ApplicationRow({ app, onView }) {
             fontSize: 11,
             fontWeight: 500,
             borderRadius: 6,
-            border: '1px solid rgba(124,58,237,0.18)',
-            background: 'rgba(124,58,237,0.07)',
+            border: '1px solid var(--border-default)',
+            background: 'transparent',
             color: 'var(--text-secondary)',
             cursor: 'pointer',
             transition: 'background 0.14s, color 0.14s',
           }}
-          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.16)'; e.currentTarget.style.color = '#a78bfa' }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.07)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.07)'; e.currentTarget.style.color = 'var(--text-primary)' }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-secondary)' }}
         >
           <Eye size={11} /> View
         </button>
@@ -379,7 +379,7 @@ function AppDetailsModal({ app, onClose }) {
                 <div className="label mb-3">Case</div>
                 <div className="flex items-center gap-2 flex-wrap mb-3">
                   {app.case_type && (
-                    <span className="px-2 py-0.5 rounded text-[11px] font-medium" style={{ background: 'rgba(124,58,237,0.15)', color: '#a78bfa' }}>
+                    <span className="px-2 py-0.5 rounded text-[11px] font-medium" style={{ background: 'rgba(255,255,255,0.07)', color: 'var(--text-secondary)', border: '1px solid rgba(255,255,255,0.10)' }}>
                       {app.case_type}
                     </span>
                   )}
@@ -451,7 +451,7 @@ function AppDetailsModal({ app, onClose }) {
                     className="text-[12px] leading-relaxed"
                     style={{
                       color: 'var(--text-secondary)',
-                      borderLeft: '2px solid rgba(124,58,237,0.4)',
+                      borderLeft: '2px solid rgba(100,116,139,0.35)',
                       paddingLeft: 10,
                       margin: 0,
                     }}
@@ -983,9 +983,9 @@ function NGORow({ ngo, onEdit, onDelete, onToggleActive }) {
           <button
             onClick={onEdit}
             className="p-1.5 rounded-lg transition-colors"
-            style={{ color: '#a78bfa' }}
+            style={{ color: 'var(--text-muted)' }}
             title="Edit"
-            onMouseEnter={e => e.currentTarget.style.background = 'rgba(124,58,237,0.15)'}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.07)'}
             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
           >
             <Pencil size={13} />
@@ -1365,7 +1365,7 @@ function LawyerRow({ lawyer: l, ngoMap, onEdit, onDelete, onToggleAvailable }) {
         <div className="text-[10px] font-mono mt-0.5" style={{ color: 'var(--text-muted)' }}>{l.lawyer_id}</div>
       </td>
       <td>
-        <span className="font-mono text-xs px-1.5 py-0.5 rounded" style={{ background: 'rgba(124,58,237,0.12)', color: '#a78bfa' }}>
+        <span className="font-mono text-xs px-1.5 py-0.5 rounded" style={{ background: 'rgba(255,255,255,0.07)', color: 'var(--text-muted)' }}>
           {l.bar_license || '—'}
         </span>
       </td>
@@ -1386,7 +1386,7 @@ function LawyerRow({ lawyer: l, ngoMap, onEdit, onDelete, onToggleAvailable }) {
       </td>
       <td className="text-xs" style={{ color: 'var(--text-muted)' }}>
         {l.ngo_id && ngoMap[l.ngo_id] ? (
-          <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: 'rgba(124,58,237,0.10)', color: '#a78bfa' }}>
+          <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: 'rgba(255,255,255,0.06)', color: 'var(--text-secondary)' }}>
             {ngoMap[l.ngo_id]}
           </span>
         ) : '—'}
@@ -1411,9 +1411,9 @@ function LawyerRow({ lawyer: l, ngoMap, onEdit, onDelete, onToggleAvailable }) {
           <button
             onClick={onEdit}
             className="p-1.5 rounded-lg transition-colors"
-            style={{ color: '#a78bfa' }}
+            style={{ color: 'var(--text-muted)' }}
             title="Edit"
-            onMouseEnter={e => e.currentTarget.style.background = 'rgba(124,58,237,0.15)'}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.07)'}
             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
           >
             <Pencil size={13} />
@@ -1634,7 +1634,7 @@ function RoutingManageModal({ app, ngos, lawyers, onClose, onUpdate }) {
                   <div className="flex items-center gap-2 flex-wrap">
                     <span
                       className="px-2 py-0.5 rounded text-[11px] font-medium"
-                      style={{ background: 'rgba(124,58,237,0.15)', color: '#a78bfa' }}
+                      style={{ background: 'rgba(255,255,255,0.07)', color: 'var(--text-secondary)', border: '1px solid rgba(255,255,255,0.10)' }}
                     >
                       {app.case_type}
                     </span>
@@ -1701,9 +1701,9 @@ function RoutingManageModal({ app, ngos, lawyers, onClose, onUpdate }) {
                   onClick={handleReroute}
                   disabled={rerouting}
                   className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-colors w-full justify-center"
-                  style={{ background: 'rgba(124,58,237,0.12)', color: '#a78bfa', border: '1px solid rgba(124,58,237,0.22)' }}
-                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.22)' }}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.12)' }}
+                  style={{ background: 'rgba(255,255,255,0.06)', color: 'var(--text-secondary)', border: '1px solid var(--border-default)' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.10)' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)' }}
                 >
                   {rerouting ? <Spinner size={13} /> : <RefreshCw size={13} />}
                   Re-run Automatic Routing
@@ -1843,7 +1843,7 @@ function RoutingRow({ app, onManage }) {
     <tr
       className="group cursor-pointer"
       onClick={onManage}
-      onMouseEnter={e => e.currentTarget.style.background = 'rgba(124,58,237,0.05)'}
+      onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
       onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
     >
       <td className="font-mono text-[11px]" style={{ color: 'var(--text-muted)' }}>
@@ -1879,9 +1879,9 @@ function RoutingRow({ app, onManage }) {
         <button
           onClick={onManage}
           className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors"
-          style={{ background: 'rgba(124,58,237,0.12)', color: '#a78bfa' }}
-          onMouseEnter={e => e.currentTarget.style.background = 'rgba(124,58,237,0.22)'}
-          onMouseLeave={e => e.currentTarget.style.background = 'rgba(124,58,237,0.12)'}
+          style={{ background: 'rgba(255,255,255,0.07)', color: 'var(--text-secondary)', border: '1px solid var(--border-default)' }}
+          onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.12)'}
+          onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.07)'}
         >
           <Settings2 size={12} />
           Manage

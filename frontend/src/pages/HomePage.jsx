@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Mic, Trash2, Download, Search, Upload, Volume2, ChevronDown, ChevronUp, ChevronRight, Scale } from 'lucide-react'
+import { Mic, Trash2, Download, Search, Upload, Volume2, ChevronDown, ChevronUp, Scale } from 'lucide-react'
 import { useAppStore } from '@/services/store'
 import { useT, isRTL, translateCategory } from '@/services/i18n'
 import { analyzeCase, downloadPDF, transcribeAudio, generateTTS } from '@/services/api'
@@ -517,49 +517,8 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* ── Workflow stepper ── */}
-      <Card padding="px-4 py-3.5" className="mt-6">
-        <div className="grid grid-cols-2 gap-3 md:flex md:gap-0 md:items-center">
-          {[
-            { n: 1, title: t('step1_title'), desc: t('step1_desc') },
-            { n: 2, title: t('step2_title'), desc: t('step2_desc') },
-            { n: 3, title: t('step3_title'), desc: t('step3_desc') },
-            { n: 4, title: t('step4_title'), desc: t('step4_desc') },
-          ].map((step, i, arr) => (
-            <div key={step.n} className="flex items-center md:flex-1">
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <div
-                  className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0"
-                  style={{
-                    background: 'rgba(124,58,237,0.15)',
-                    color: '#a78bfa',
-                    border: '1px solid rgba(124,58,237,0.28)',
-                  }}
-                >
-                  {step.n}
-                </div>
-                <div>
-                  <div className="text-[11px] font-semibold leading-tight" style={{ color: 'var(--text-primary)' }}>
-                    {step.title}
-                  </div>
-                  <div className="text-[10px] mt-0.5 leading-snug" style={{ color: 'var(--text-muted)' }}>
-                    {step.desc}
-                  </div>
-                </div>
-              </div>
-              {i < arr.length - 1 && (
-                <div className="hidden md:flex flex-1 items-center mx-3">
-                  <div className="flex-1 h-px" style={{ background: 'rgba(124,58,237,0.18)' }} />
-                  <ChevronRight size={11} className="flex-shrink-0" style={{ color: 'rgba(124,58,237,0.35)' }} />
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </Card>
-
       {/* Footer */}
-      <div className="mt-8 text-center text-xs py-4" style={{ color: 'var(--text-muted)', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+      <div className="mt-10 text-center text-xs py-6" style={{ color: 'var(--text-muted)', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
         {t('disclaimer')}
       </div>
     </div>

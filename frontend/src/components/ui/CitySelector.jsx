@@ -3,15 +3,22 @@ import { useAppStore } from '@/services/store'
 const CITIES = ['Any City','Karachi','Lahore','Islamabad','Rawalpindi','Peshawar','Quetta','Multan','Faisalabad']
 const LANGUAGES = ['English','Urdu']
 
-const compactStyle = {
-  color: 'rgba(255,255,255,0.55)',
-  borderColor: 'rgba(255,255,255,0.12)',
-  background: 'rgba(255,255,255,0.05)',
-  borderRadius: 10,
+function compactStyle(isDark) {
+  return isDark ? {
+    color: 'rgba(255,255,255,0.55)',
+    borderColor: 'rgba(255,255,255,0.12)',
+    background: 'rgba(255,255,255,0.05)',
+    borderRadius: 10,
+  } : {
+    color: 'rgba(15,23,42,0.65)',
+    borderColor: 'rgba(15,23,42,0.12)',
+    background: '#FFFFFF',
+    borderRadius: 10,
+  }
 }
 
 export default function CitySelector({ compact }) {
-  const { city, setCity } = useAppStore()
+  const { city, setCity, theme } = useAppStore()
   return (
     <div>
       {!compact && <div className="label">City</div>}
@@ -21,7 +28,7 @@ export default function CitySelector({ compact }) {
         className={compact
           ? 'w-full text-xs px-2 py-1.5 border outline-none transition-colors'
           : 'input text-sm'}
-        style={compact ? compactStyle : {}}
+        style={compact ? compactStyle(theme === 'dark') : {}}
       >
         {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
       </select>
@@ -30,7 +37,7 @@ export default function CitySelector({ compact }) {
 }
 
 export function LanguageSelector({ compact }) {
-  const { language, setLanguage } = useAppStore()
+  const { language, setLanguage, theme } = useAppStore()
   return (
     <div>
       {!compact && <div className="label">Language</div>}
@@ -40,7 +47,7 @@ export function LanguageSelector({ compact }) {
         className={compact
           ? 'w-full text-xs px-2 py-1.5 border outline-none transition-colors'
           : 'input text-sm'}
-        style={compact ? compactStyle : {}}
+        style={compact ? compactStyle(theme === 'dark') : {}}
       >
         {LANGUAGES.map(l => (
           <option key={l} value={l}>{l === 'Urdu' ? 'اردو' : 'English'}</option>

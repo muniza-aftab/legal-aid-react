@@ -61,9 +61,9 @@ function tok(isDark) {
     emptyIconShadow:    isDark ? '0 8px 32px rgba(124,58,237,0.18)' : '0 4px 20px rgba(124,58,237,0.10)',
     emptyTitleColor:    isDark ? '#F1F5F9'                 : '#0F172A',
     emptySubColor:      isDark ? 'rgba(241,245,249,0.42)'  : 'rgba(15,23,42,0.48)',
-    promptBg:           isDark ? 'rgba(124,58,237,0.08)'   : 'rgba(109,40,217,0.07)',
-    promptBorder:       isDark ? 'rgba(124,58,237,0.16)'   : 'rgba(109,40,217,0.20)',
-    promptColor:        isDark ? 'rgba(167,139,250,0.85)'  : '#5B21B6',
+    promptBg:           isDark ? 'rgba(255,255,255,0.05)'  : 'rgba(0,0,0,0.04)',
+    promptBorder:       isDark ? 'rgba(255,255,255,0.09)'  : 'rgba(0,0,0,0.08)',
+    promptColor:        isDark ? 'rgba(241,245,249,0.58)'  : 'rgba(15,23,42,0.60)',
   }
 }
 

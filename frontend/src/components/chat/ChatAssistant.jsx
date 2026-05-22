@@ -135,20 +135,20 @@ export default function ChatAssistant({ caseContext }) {
                   dir={rtl ? 'rtl' : 'ltr'}
                   style={{
                     textAlign:   rtl ? 'right' : 'left',
-                    background:  'rgba(124,58,237,0.08)',
-                    border:      '1px solid rgba(124,58,237,0.16)',
-                    color:       'rgba(167,139,250,0.85)',
+                    background:  'rgba(255,255,255,0.05)',
+                    border:      '1px solid rgba(255,255,255,0.09)',
+                    color:       'rgba(241,245,249,0.60)',
                     cursor:      'pointer',
                   }}
                   onMouseEnter={e => {
-                    e.currentTarget.style.background   = 'rgba(124,58,237,0.14)'
-                    e.currentTarget.style.borderColor  = 'rgba(124,58,237,0.28)'
-                    e.currentTarget.style.color        = '#a78bfa'
+                    e.currentTarget.style.background   = 'rgba(255,255,255,0.09)'
+                    e.currentTarget.style.borderColor  = 'rgba(255,255,255,0.15)'
+                    e.currentTarget.style.color        = 'rgba(241,245,249,0.85)'
                   }}
                   onMouseLeave={e => {
-                    e.currentTarget.style.background   = 'rgba(124,58,237,0.08)'
-                    e.currentTarget.style.borderColor  = 'rgba(124,58,237,0.16)'
-                    e.currentTarget.style.color        = 'rgba(167,139,250,0.85)'
+                    e.currentTarget.style.background   = 'rgba(255,255,255,0.05)'
+                    e.currentTarget.style.borderColor  = 'rgba(255,255,255,0.09)'
+                    e.currentTarget.style.color        = 'rgba(241,245,249,0.60)'
                   }}
                 >
                   💬 {prompt}
@@ -315,9 +315,9 @@ function ChatMessage({ msg, rtl, language, t }) {
               }}
               onMouseEnter={e => {
                 if (ttsState === 'idle') {
-                  e.currentTarget.style.background = 'rgba(124,58,237,0.12)'
-                  e.currentTarget.style.color = '#a78bfa'
-                  e.currentTarget.style.borderColor = 'rgba(124,58,237,0.25)'
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.08)'
+                  e.currentTarget.style.color = 'var(--text-secondary)'
+                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.14)'
                 }
               }}
               onMouseLeave={e => {

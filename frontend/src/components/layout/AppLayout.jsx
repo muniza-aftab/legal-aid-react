@@ -58,19 +58,21 @@ export default function AppLayout({ children }) {
             style={{ left: 0 }}
           >
             {/* Logo */}
-            <div className="flex items-center gap-3 px-4 py-5 border-b" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
+            <div className="flex items-center gap-3 px-4 py-5 border-b" style={{ borderColor: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(15,23,42,0.09)' }}>
               <div
                 className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
                 style={{
                   background: 'linear-gradient(145deg, #0e1a56 0%, #18106a 40%, #2b0d6e 100%)',
-                  boxShadow: '0 0 0 1px rgba(124,58,237,0.45), 0 0 16px rgba(124,58,237,0.50), 0 0 32px rgba(59,130,246,0.22)',
+                  boxShadow: isDark
+                    ? '0 0 0 1px rgba(124,58,237,0.45), 0 0 16px rgba(124,58,237,0.50), 0 0 32px rgba(59,130,246,0.22)'
+                    : '0 0 0 1px rgba(124,58,237,0.22), 0 2px 8px rgba(124,58,237,0.10)',
                 }}
               >
                 <ScalesIcon size={22} gid="al" />
               </div>
               <div>
-                <div className="text-sm font-bold leading-tight" style={{ color: '#F1F5F9' }}>Pakistan AI</div>
-                <div className="text-[11px]" style={{ color: isDark ? 'rgba(255,255,255,0.32)' : 'rgba(255,255,255,0.52)' }}>Legal Aid · RAG + Groq</div>
+                <div className="text-sm font-bold leading-tight" style={{ color: isDark ? '#F1F5F9' : '#0F172A' }}>Pakistan AI</div>
+                <div className="text-[11px]" style={{ color: isDark ? 'rgba(255,255,255,0.32)' : 'rgba(15,23,42,0.45)' }}>Legal Aid · RAG + Groq</div>
               </div>
             </div>
 
@@ -79,7 +81,7 @@ export default function AppLayout({ children }) {
               <div>
                 <div
                   className="text-[9px] font-bold uppercase tracking-widest px-2 mb-2"
-                  style={{ color: isDark ? 'rgba(255,255,255,0.20)' : 'rgba(255,255,255,0.42)' }}
+                  style={{ color: isDark ? 'rgba(255,255,255,0.20)' : 'rgba(15,23,42,0.35)' }}
                 >
                   Main
                 </div>
@@ -91,7 +93,7 @@ export default function AppLayout({ children }) {
               <div>
                 <div
                   className="text-[9px] font-bold uppercase tracking-widest px-2 mb-2"
-                  style={{ color: isDark ? 'rgba(255,255,255,0.20)' : 'rgba(255,255,255,0.42)' }}
+                  style={{ color: isDark ? 'rgba(255,255,255,0.20)' : 'rgba(15,23,42,0.35)' }}
                 >
                   Admin & Data
                 </div>
@@ -102,7 +104,7 @@ export default function AppLayout({ children }) {
             </nav>
 
             {/* Bottom controls */}
-            <div className="p-3 border-t space-y-2" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
+            <div className="p-3 border-t space-y-2" style={{ borderColor: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(15,23,42,0.09)' }}>
               <LanguageSelector compact />
               <CitySelector compact />
               {adminAuthenticated && (
@@ -116,7 +118,7 @@ export default function AppLayout({ children }) {
                   <LogOut size={13} /> Logout Admin
                 </button>
               )}
-              <div className="px-2 pt-1 text-[10px] leading-relaxed" style={{ color: isDark ? 'rgba(255,255,255,0.20)' : 'rgba(255,255,255,0.38)' }}>
+              <div className="px-2 pt-1 text-[10px] leading-relaxed" style={{ color: isDark ? 'rgba(255,255,255,0.20)' : 'rgba(15,23,42,0.38)' }}>
                 🔒 Private · No data stored · Free to use
               </div>
             </div>
