@@ -105,9 +105,8 @@ export default function AIAssistantDrawer() {
     return () => window.removeEventListener('keydown', onKey)
   }, [aiDrawerOpen])
 
-  const handleSend = async () => {
-    if (!input.trim() || loading) return
-    const msg = input.trim()
+  const sendMessage = async (msg) => {
+    if (!msg.trim() || loading) return
     setInput('')
     if (textareaRef.current) textareaRef.current.style.height = 'auto'
     addChatMessage({ role: 'user', content: msg, id: uid() })
@@ -129,6 +128,8 @@ export default function AIAssistantDrawer() {
     }
     setLoading(false)
   }
+
+  const handleSend = () => sendMessage(input.trim())
 
   const handleClear = async () => {
     if (chatSessionId) { try { await clearChatSession(chatSessionId) } catch {} }
@@ -242,7 +243,7 @@ export default function AIAssistantDrawer() {
               style={{ background: tk.messagesBg }}
             >
               {chatMessages.length === 0 ? (
-                <EmptyState t={t} tk={tk} rtl={rtl} />
+                <EmptyState t={t} tk={tk} rtl={rtl} onSelectPrompt={sendMessage} />
               ) : (
                 chatMessages.map(msg => (
                   <ChatBubble key={msg.id} msg={msg} rtl={rtl} language={language} tk={tk} t={t} />
@@ -297,7 +298,7 @@ export default function AIAssistantDrawer() {
 }
 
 /* ── Empty state ── */
-function EmptyState({ t, tk, rtl }) {
+function EmptyState({ t, tk, rtl, onSelectPrompt }) {
   const prompts = [t('chat_prompt1'), t('chat_prompt2'), t('chat_prompt3')]
   return (
     <div className="flex flex-col items-center justify-center h-full text-center px-4 py-8">
@@ -324,22 +325,36 @@ function EmptyState({ t, tk, rtl }) {
 
       <div className="w-full space-y-2">
         {prompts.map((prompt, i) => (
-          <motion.div
+          <motion.button
             key={i}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 + i * 0.07 }}
-            className="text-xs px-3 py-2.5 rounded-xl"
+            whileHover={{ scale: 1.015, x: rtl ? -2 : 2 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => onSelectPrompt(prompt)}
+            className="w-full text-xs px-3 py-2.5 rounded-xl text-left transition-all"
             dir={rtl ? 'rtl' : 'ltr'}
             style={{
               textAlign:  rtl ? 'right' : 'left',
               background: tk.promptBg,
               border:     `1px solid ${tk.promptBorder}`,
               color:      tk.promptColor,
+              cursor:     'pointer',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background    = tk.listenHoverBg
+              e.currentTarget.style.borderColor   = tk.listenHoverBorder
+              e.currentTarget.style.color         = tk.listenHoverColor
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background    = tk.promptBg
+              e.currentTarget.style.borderColor   = tk.promptBorder
+              e.currentTarget.style.color         = tk.promptColor
             }}
           >
             💬 {prompt}
-          </motion.div>
+          </motion.button>
         ))}
       </div>
     </div>

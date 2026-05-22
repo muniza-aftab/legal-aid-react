@@ -27,14 +27,11 @@ export default function ChatAssistant({ caseContext }) {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [chatMessages])
 
-  const handleSend = async () => {
-    if (!input.trim() || loading) return
-    const msg = input.trim()
+  const sendMessage = async (msg) => {
+    if (!msg.trim() || loading) return
     setInput('')
-
     addChatMessage({ role: 'user', content: msg, id: uid() })
     setLoading(true)
-
     try {
       const ctx = caseContext ? {
         category:   caseContext.category   || '',
@@ -52,14 +49,12 @@ export default function ChatAssistant({ caseContext }) {
         id: uid(),
       })
     } catch {
-      addChatMessage({
-        role: 'assistant',
-        content: t('chat_error'),
-        id: uid(),
-      })
+      addChatMessage({ role: 'assistant', content: t('chat_error'), id: uid() })
     }
     setLoading(false)
   }
+
+  const handleSend = () => sendMessage(input.trim())
 
   const handleClear = async () => {
     if (chatSessionId) {
@@ -117,10 +112,44 @@ export default function ChatAssistant({ caseContext }) {
       {/* Messages */}
       <div className="overflow-y-auto px-4 py-4 space-y-4" style={{ maxHeight: 'min(400px, 60vh)' }}>
         {chatMessages.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-sm text-center" style={{ color: 'var(--text-muted)' }}>
-            <div dir={rtl ? 'rtl' : 'ltr'}>
-              <Scale size={32} className="mx-auto mb-3 opacity-20" />
-              <p>{t('chat_hint')}</p>
+          <div className="flex flex-col items-center justify-center h-full text-center py-4 px-2">
+            <Scale size={28} className="mx-auto mb-3 opacity-20" style={{ color: 'var(--text-muted)' }} />
+            <p className="text-sm mb-4" style={{ color: 'var(--text-muted)' }} dir={rtl ? 'rtl' : 'ltr'}>
+              {t('chat_hint')}
+            </p>
+            <div className="w-full space-y-2">
+              {[t('chat_prompt1'), t('chat_prompt2'), t('chat_prompt3')].map((prompt, i) => (
+                <motion.button
+                  key={i}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 + i * 0.07 }}
+                  whileHover={{ scale: 1.015 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => sendMessage(prompt)}
+                  className="w-full text-xs px-3 py-2.5 rounded-xl text-left transition-all"
+                  dir={rtl ? 'rtl' : 'ltr'}
+                  style={{
+                    textAlign:   rtl ? 'right' : 'left',
+                    background:  'rgba(124,58,237,0.08)',
+                    border:      '1px solid rgba(124,58,237,0.16)',
+                    color:       'rgba(167,139,250,0.85)',
+                    cursor:      'pointer',
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.background   = 'rgba(124,58,237,0.14)'
+                    e.currentTarget.style.borderColor  = 'rgba(124,58,237,0.28)'
+                    e.currentTarget.style.color        = '#a78bfa'
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.background   = 'rgba(124,58,237,0.08)'
+                    e.currentTarget.style.borderColor  = 'rgba(124,58,237,0.16)'
+                    e.currentTarget.style.color        = 'rgba(167,139,250,0.85)'
+                  }}
+                >
+                  💬 {prompt}
+                </motion.button>
+              ))}
             </div>
           </div>
         ) : (

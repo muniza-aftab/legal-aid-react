@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Lock, CheckCircle, ArrowRight } from 'lucide-react'
+import { Lock, CheckCircle } from 'lucide-react'
 import { useAppStore } from '@/services/store'
 
 
@@ -12,14 +12,14 @@ export default function LanguagePicker() {
   const [entering, setEntering] = useState(false)
 
   function handleSelect(lang) {
+    if (entering) return
     setSelected(lang)
-  }
-
-  function handleEnter() {
-    if (!selected || entering) return
-    setEntering(true)
-    setLanguage(selected)
-    setTimeout(() => navigate('/home'), 500)
+    // Show selected state for 300ms, then trigger loading transition
+    setTimeout(() => {
+      setLanguage(lang)
+      setEntering(true)
+      setTimeout(() => navigate('/home'), 500)
+    }, 300)
   }
 
 
@@ -157,31 +157,6 @@ export default function LanguagePicker() {
                     rtl
                   />
                 </div>
-
-                <AnimatePresence>
-                  {selected && (
-                    <motion.button
-                      key="enter-btn"
-                      initial={{ opacity: 0, y: 8, scale: 0.96 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{ duration: 0.25 }}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={handleEnter}
-                      className="w-full flex items-center justify-center gap-2 rounded-xl py-3.5 font-bold text-sm transition-all mb-4"
-                      style={{
-                        background: 'linear-gradient(135deg, #7C3AED 0%, #22D3EE 100%)',
-                        color: '#fff',
-                        boxShadow: '0 4px 24px rgba(124,58,237,0.50)',
-                      }}
-                    >
-                      <CheckCircle size={16} />
-                      {selected === 'Urdu' ? 'ایپ میں داخل ہوں' : 'Enter App'}
-                      <ArrowRight size={16} />
-                    </motion.button>
-                  )}
-                </AnimatePresence>
 
                 <div className="mt-5">
                   <div className="mb-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }} />
