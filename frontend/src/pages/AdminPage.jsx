@@ -225,7 +225,7 @@ function ApplicationRow({ app, onView }) {
       <td className="font-mono text-[11px]" style={{ color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
         {app.application_id?.slice(-8)}
       </td>
-      <td className="font-semibold text-sm" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+      <td className="font-semibold text-sm" dir="auto" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
         {app.name}
       </td>
       <td className="text-xs" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -348,7 +348,7 @@ function AppDetailsModal({ app, onClose }) {
               <div>
                 <div className="label mb-3">Applicant</div>
                 <div className="flex items-baseline gap-2 mb-2">
-                  <span className="font-semibold text-base" style={{ color: 'var(--text-primary)' }}>{app.name || '—'}</span>
+                  <span dir="auto" className="font-semibold text-base" style={{ color: 'var(--text-primary)' }}>{app.name || '—'}</span>
                   {app.city && <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{app.city}</span>}
                 </div>
                 <div className="space-y-1.5">
@@ -427,6 +427,7 @@ function AppDetailsModal({ app, onClose }) {
                 <div className="label mb-3">Case Description</div>
                 {app.description ? (
                   <p
+                    dir="auto"
                     className="text-[13px] leading-relaxed"
                     style={{
                       color: 'var(--text-secondary)',
@@ -1629,7 +1630,7 @@ function RoutingManageModal({ app, ngos, lawyers, onClose, onUpdate }) {
                 <div className="label mb-3">Applicant</div>
                 <div className="space-y-2">
                   <div className="flex items-baseline gap-2">
-                    <span className="font-semibold text-base" style={{ color: 'var(--text-primary)' }}>{app.name}</span>
+                    <span dir="auto" className="font-semibold text-base" style={{ color: 'var(--text-primary)' }}>{app.name}</span>
                     <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{app.city}</span>
                   </div>
                   <div className="flex items-center gap-2 flex-wrap">
@@ -1851,7 +1852,7 @@ function RoutingRow({ app, onManage }) {
         {app.application_id?.slice(-8)}
       </td>
       <td>
-        <div className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>{app.name}</div>
+        <div dir="auto" className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>{app.name}</div>
         <div className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{app.city}</div>
       </td>
       <td>
@@ -2043,7 +2044,7 @@ function RoutingTab() {
 
 // ── Analytics Tab ─────────────────────────────────────────────────────────────
 function AnalyticsTab() {
-  return <AnalyticsPage />
+  return <div dir="ltr"><AnalyticsPage /></div>
 }
 
 // ── Main Admin Page ───────────────────────────────────────────────────────────
@@ -2055,7 +2056,7 @@ export default function AdminPage() {
   }
 
   return (
-    <PageContainer size="full">
+    <PageContainer size="full" dir="ltr">
       <SectionHeader eyebrow="Administration" title="Admin Dashboard" />
       <AdminNav />
       <Routes>

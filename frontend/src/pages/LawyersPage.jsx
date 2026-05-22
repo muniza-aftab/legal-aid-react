@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { Search, MapPin, Building2, Scale } from 'lucide-react'
 import { getLawyers, getNGOs } from '@/services/api'
-import { useT, isRTL, translateCategory } from '@/services/i18n'
+import { useT, translateCategory } from '@/services/i18n'
 import { useAppStore } from '@/services/store'
 import { SectionHeader, Spinner, Card } from '@/components/ui/index'
 import { PageContainer } from '@/components/layout/PageLayout'
@@ -149,7 +149,6 @@ function LawyerCard({ lawyer, ngoName, index }) {
 export default function LawyersPage() {
   const t = useT()
   const { theme, language } = useAppStore()
-  const rtl = isRTL(language)
   const isDark = theme === 'dark'
 
   const [lawyers,   setLawyers]   = useState([])

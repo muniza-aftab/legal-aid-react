@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { useT, isRTL } from '@/services/i18n'
+import { useT } from '@/services/i18n'
 import { useAppStore } from '@/services/store'
 import { SectionHeader, Card } from '@/components/ui/index'
 import { PageContainer } from '@/components/layout/PageLayout'
@@ -7,7 +7,6 @@ import { PageContainer } from '@/components/layout/PageLayout'
 export default function AboutPage() {
   const t = useT()
   const { language } = useAppStore()
-  const rtl = isRTL(language)
 
   const features = [
     { icon: '🤖', title: t('feat_ai_title'),   desc: t('feat_ai_desc') },

@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { AlertTriangle } from 'lucide-react'
-import { useT, isRTL } from '@/services/i18n'
+import { useT } from '@/services/i18n'
 import { useAppStore } from '@/services/store'
 import { SectionHeader, Card, Alert } from '@/components/ui/index'
 import { PageContainer } from '@/components/layout/PageLayout'
@@ -17,7 +17,6 @@ const CONTACTS = [
 export default function EmergencyPage() {
   const t = useT()
   const { language } = useAppStore()
-  const rtl = isRTL(language)
 
   const STEPS = [
     { icon: '📱', title: t('estep1_title'), desc: t('estep1_desc') },

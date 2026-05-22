@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Search, Phone, Mail, Building2 } from 'lucide-react'
 import { getNGOs } from '@/services/api'
-import { useT, isRTL, translateCategory } from '@/services/i18n'
+import { useT, translateCategory } from '@/services/i18n'
 import { useAppStore } from '@/services/store'
 import { SectionHeader, Card, Badge, Spinner, EmptyState } from '@/components/ui/index'
 import { PageContainer } from '@/components/layout/PageLayout'
@@ -37,7 +37,6 @@ const categoryColor = (cat) => CATEGORY_COLOR[cat] || '#64748B'
 export default function NGOPage() {
   const t = useT()
   const { language } = useAppStore()
-  const rtl = isRTL(language)
 
   const [ngos,           setNgos]           = useState([])
   const [loading,        setLoading]        = useState(true)
