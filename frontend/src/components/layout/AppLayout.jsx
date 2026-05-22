@@ -15,15 +15,23 @@ import AIAssistantDrawer from '@/components/chat/AIAssistantDrawer'
 import FloatingAIButton from '@/components/ui/FloatingAIButton'
 
 const NAV = [
-  { href: '/home',              icon: LayoutDashboard, key: 'nav_home',              group: 'main' },
-  { action: 'openAiDrawer',    icon: MessageSquare,   key: 'nav_chat',              group: 'main' },
-  { href: '/document-analysis', icon: FileSearch,     key: 'nav_document_analysis', group: 'main' },
-  { href: '/apply',             icon: FileText,        key: 'nav_apply',             group: 'main' },
-  { href: '/lawyers',           icon: Users,           key: 'nav_lawyers',           group: 'main' },
-  { href: '/ngos',              icon: Building2,       key: 'nav_ngos',              group: 'main' },
-  { href: '/emergency',         icon: AlertTriangle,   key: 'nav_emergency',         group: 'main' },
-  { href: '/about',             icon: Info,            key: 'nav_about',             group: 'main' },
-  { href: '/admin',             icon: Settings,        key: 'nav_admin',             group: 'admin' },
+  { href: '/home',              icon: LayoutDashboard, key: 'nav_home',              group: 'main'      },
+  { action: 'openAiDrawer',    icon: MessageSquare,   key: 'nav_chat',              group: 'tools'     },
+  { href: '/apply',             icon: FileText,        key: 'nav_apply',             group: 'tools'     },
+  { href: '/document-analysis', icon: FileSearch,     key: 'nav_document_analysis', group: 'tools'     },
+  { href: '/lawyers',           icon: Users,           key: 'nav_lawyers',           group: 'directory' },
+  { href: '/ngos',              icon: Building2,       key: 'nav_ngos',              group: 'directory' },
+  { href: '/emergency',         icon: AlertTriangle,   key: 'nav_emergency',         group: 'support'   },
+  { href: '/about',             icon: Info,            key: 'nav_about',             group: 'support'   },
+  { href: '/admin',             icon: Settings,        key: 'nav_admin',             group: 'system'    },
+]
+
+const SECTIONS = [
+  { label: 'Main',      group: 'main'      },
+  { label: 'Tools',     group: 'tools'     },
+  { label: 'Directory', group: 'directory' },
+  { label: 'Support',   group: 'support'   },
+  { label: 'System',    group: 'system'    },
 ]
 
 export default function AppLayout({ children }) {
@@ -39,8 +47,6 @@ export default function AppLayout({ children }) {
   const isDark = theme === 'dark'
   const isAdminRoute = location.pathname.startsWith('/admin')
 
-  const mainNav  = NAV.filter(n => n.group === 'main')
-  const adminNav = NAV.filter(n => n.group === 'admin')
 
   return (
     // Outer shell is always LTR — sidebar must never mirror to the right
@@ -71,40 +77,35 @@ export default function AppLayout({ children }) {
                 <ScalesIcon size={22} gid="al" />
               </div>
               <div>
-                <div className="text-sm font-bold leading-tight" style={{ color: isDark ? '#F1F5F9' : '#0F172A' }}>Pakistan AI</div>
-                <div className="text-[11px]" style={{ color: isDark ? 'rgba(255,255,255,0.32)' : 'rgba(15,23,42,0.45)' }}>Legal Aid · RAG + Groq</div>
+                <div className="text-sm font-bold leading-tight" style={{ color: isDark ? '#F1F5F9' : '#0F172A' }}>Pakistan Legal Aid</div>
+                <div className="text-[11px]" style={{ color: isDark ? 'rgba(255,255,255,0.32)' : 'rgba(15,23,42,0.45)' }}>Powered by AI</div>
               </div>
             </div>
 
             {/* Nav */}
-            <nav className="flex-1 overflow-y-auto p-3 space-y-5">
-              <div>
-                <div
-                  className="text-[9px] font-bold uppercase tracking-widest px-2 mb-2"
-                  style={{ color: isDark ? 'rgba(255,255,255,0.20)' : 'rgba(15,23,42,0.35)' }}
-                >
-                  Main
-                </div>
-                {mainNav.map(item => (
-                  <NavItem key={item.href || item.action} item={item} current={location.pathname} t={t} onAction={handleNavAction} />
-                ))}
-              </div>
-
-              <div>
-                <div
-                  className="text-[9px] font-bold uppercase tracking-widest px-2 mb-2"
-                  style={{ color: isDark ? 'rgba(255,255,255,0.20)' : 'rgba(15,23,42,0.35)' }}
-                >
-                  System
-                </div>
-                {adminNav.map(item => (
-                  <NavItem key={item.href || item.action} item={item} current={location.pathname} t={t} onAction={handleNavAction} />
-                ))}
-              </div>
+            <nav className="flex-1 overflow-y-auto px-3 py-4">
+              {SECTIONS.map(({ label, group }, si) => {
+                const items = NAV.filter(n => n.group === group)
+                return (
+                  <div key={group} style={{ marginTop: si === 0 ? 0 : 22 }}>
+                    <div
+                      className="text-[9px] font-bold uppercase tracking-widest px-2 mb-1.5"
+                      style={{ color: isDark ? 'rgba(255,255,255,0.20)' : 'rgba(15,23,42,0.32)' }}
+                    >
+                      {label}
+                    </div>
+                    <div className="space-y-0.5">
+                      {items.map(item => (
+                        <NavItem key={item.href || item.action} item={item} current={location.pathname} t={t} onAction={handleNavAction} isDark={isDark} />
+                      ))}
+                    </div>
+                  </div>
+                )
+              })}
             </nav>
 
             {/* Bottom controls */}
-            <div className="p-3 border-t space-y-2" style={{ borderColor: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(15,23,42,0.09)' }}>
+            <div className="px-3 pb-3 pt-5 space-y-2">
               <LanguageSelector compact />
               <CitySelector compact />
               {adminAuthenticated && (
@@ -118,7 +119,7 @@ export default function AppLayout({ children }) {
                   <LogOut size={13} /> Logout Admin
                 </button>
               )}
-              <div className="px-2 pt-1 text-[10px] leading-relaxed" style={{ color: isDark ? 'rgba(255,255,255,0.20)' : 'rgba(15,23,42,0.38)' }}>
+              <div className="px-2 pt-2 text-[9px] leading-relaxed" style={{ color: isDark ? 'rgba(255,255,255,0.14)' : 'rgba(15,23,42,0.28)' }}>
                 🔒 Private · No data stored · Free to use
               </div>
             </div>
@@ -248,15 +249,19 @@ export default function AppLayout({ children }) {
   )
 }
 
-function NavItem({ item, current, t, onAction }) {
+function NavItem({ item, current, t, onAction, isDark }) {
   if (item.action) {
     return (
       <button onClick={() => onAction?.(item.action)} className="nav-item w-full text-left">
         <item.icon size={14} className="flex-shrink-0" />
         <span>{t(item.key)}</span>
         <span
-          className="ml-auto text-[9px] font-bold px-1.5 py-0.5 rounded-md"
-          style={{ background: 'rgba(124,58,237,0.20)', color: '#a78bfa', border: '1px solid rgba(124,58,237,0.28)' }}
+          className="ml-auto text-[9px] px-1.5 py-0.5 rounded"
+          style={{
+            background: isDark ? 'rgba(124,58,237,0.10)' : 'rgba(124,58,237,0.07)',
+            color: isDark ? 'rgba(167,139,250,0.55)' : 'rgba(109,40,217,0.50)',
+            letterSpacing: '0.02em',
+          }}
         >
           AI
         </span>
