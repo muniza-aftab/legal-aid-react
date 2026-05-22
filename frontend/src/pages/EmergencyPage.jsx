@@ -6,12 +6,12 @@ import { SectionHeader, Card, Alert } from '@/components/ui/index'
 import { PageContainer } from '@/components/layout/PageLayout'
 
 const CONTACTS = [
-  { label: 'Police',            number: '15',   icon: '🚔', color: '#a78bfa', bg: 'rgba(124,58,237,0.12)', border: 'rgba(124,58,237,0.25)' },
-  { label: 'Edhi Foundation',   number: '115',  icon: '🚑', color: '#34d399', bg: 'rgba(16,185,129,0.12)', border: 'rgba(16,185,129,0.25)' },
-  { label: 'Women Helpline',    number: '1099', icon: '👩', color: '#f9a8d4', bg: 'rgba(236,72,153,0.12)', border: 'rgba(236,72,153,0.25)' },
-  { label: 'Cyber Crime (FIA)', number: '9911', icon: '🛡️', color: '#67e8f9', bg: 'rgba(34,211,238,0.12)', border: 'rgba(34,211,238,0.25)' },
-  { label: 'Rescue',            number: '1122', icon: '🔥', color: '#fca5a5', bg: 'rgba(239,68,68,0.12)',  border: 'rgba(239,68,68,0.25)' },
-  { label: 'Child Protection',  number: '1121', icon: '👶', color: '#fcd34d', bg: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.25)' },
+  { label: 'Police',            labelUrdu: 'پولیس',              number: '15',   icon: '🚔', color: '#a78bfa', bg: 'rgba(124,58,237,0.12)', border: 'rgba(124,58,237,0.25)' },
+  { label: 'Edhi Foundation',   labelUrdu: 'ایدھی فاؤنڈیشن',    number: '115',  icon: '🚑', color: '#34d399', bg: 'rgba(16,185,129,0.12)', border: 'rgba(16,185,129,0.25)' },
+  { label: 'Women Helpline',    labelUrdu: 'خواتین ہیلپ لائن',   number: '1099', icon: '👩', color: '#f9a8d4', bg: 'rgba(236,72,153,0.12)', border: 'rgba(236,72,153,0.25)' },
+  { label: 'Cyber Crime (FIA)', labelUrdu: 'سائبر کرائم (FIA)',  number: '9911', icon: '🛡️', color: '#67e8f9', bg: 'rgba(34,211,238,0.12)', border: 'rgba(34,211,238,0.25)' },
+  { label: 'Rescue',            labelUrdu: 'ریسکیو',             number: '1122', icon: '🔥', color: '#fca5a5', bg: 'rgba(239,68,68,0.12)',  border: 'rgba(239,68,68,0.25)' },
+  { label: 'Child Protection',  labelUrdu: 'بچوں کا تحفظ',      number: '1121', icon: '👶', color: '#fcd34d', bg: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.25)' },
 ]
 
 export default function EmergencyPage() {
@@ -38,7 +38,7 @@ export default function EmergencyPage() {
 
       <Alert type="danger" className="mb-6">
         <AlertTriangle size={16} className="flex-shrink-0 mt-0.5" />
-        <span>{t('emergency_alert')} <strong>15 (Police)</strong> {language === 'Urdu' ? 'یا' : 'or'} <strong>1122 (Rescue)</strong>.</span>
+        <span>{t('emergency_alert')} <strong>15 ({language === 'Urdu' ? 'پولیس' : 'Police'})</strong> {language === 'Urdu' ? 'یا' : 'or'} <strong>1122 ({language === 'Urdu' ? 'ریسکیو' : 'Rescue'})</strong>.</span>
       </Alert>
 
       {/* Emergency contacts */}
@@ -57,7 +57,7 @@ export default function EmergencyPage() {
           >
             <div className="text-3xl mb-2">{c.icon}</div>
             <div className="font-bold text-2xl font-mono mb-1" style={{ color: c.color }}>{c.number}</div>
-            <div className="text-xs font-semibold" style={{ color: c.color }}>{c.label}</div>
+            <div className="text-xs font-semibold" style={{ color: c.color }}>{language === 'Urdu' ? c.labelUrdu : c.label}</div>
           </motion.a>
         ))}
       </div>

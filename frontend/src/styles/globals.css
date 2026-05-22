@@ -323,31 +323,92 @@
   .urdu { direction: rtl; text-align: right; font-family: var(--font-urdu); }
 
   /* ── Sidebar is always LTR — never mirrors ── */
-  /* The outer layout shell is dir="ltr"; this rule is a safety net */
   .sidebar { direction: ltr; }
 
   /* ── Tailwind physical text-align overrides ── */
-  /* .label uses @apply which doesn't set text-align, but .data-table th uses text-left */
   [dir="rtl"] .data-table th { text-align: right; }
 
   /* ── Physical border accents flip in RTL ── */
-  /* Tailwind border-l-* classes use physical properties; override for RTL content */
   [dir="rtl"] .border-l-4 { border-left-width: 0; border-right-width: 4px; }
   [dir="rtl"] .border-l-2 { border-left-width: 0; border-right-width: 2px; }
   [dir="rtl"] .border-l   { border-left-width: 0; border-right-width: 1px; }
 
-  /* ── Section header: prevent description from overflowing left edge in RTL ── */
-  [dir="rtl"] .section-title,
-  [dir="rtl"] .section-eyebrow { text-align: right; }
-
-  /* ── Form inputs: placeholder alignment and padding ── */
-  /* .input uses symmetric px-4 (fine), but text naturally aligns right under dir=rtl */
-  /* No extra rule needed — inherits direction from parent */
-
   /* ── Overflow guard for RTL scroll origin ── */
-  /* Prevent the RTL scroll origin from causing left-edge clipping */
   [dir="rtl"] .overflow-auto,
   [dir="rtl"] .overflow-y-auto { overflow-anchor: none; }
+
+  /* ────────────────────────────────────────────────────────────────────────
+     URDU TYPOGRAPHY — global corrections for Noto Nastaliq
+     Noto Nastaliq is a tall cursive script; Latin-optimised values cause
+     overlap, clipping and glyph-connection breaks in every page header.
+  ──────────────────────────────────────────────────────────────────────── */
+
+  /* 1 ── Section title: undo Latin-only negative kerning + open up line-height */
+  [dir="rtl"] .section-title {
+    text-align:     right;
+    letter-spacing: 0;        /* was -0.025em — breaks Nastaliq connections */
+    line-height:    1.65;     /* was 1.2 — causes descender/ascender overlap */
+    word-break:     keep-all; /* never break mid-glyph cluster */
+    overflow-wrap:  break-word;
+  }
+
+  /* 2 ── Eyebrow label: remove wide tracking that severs Urdu letter joins */
+  [dir="rtl"] .section-eyebrow {
+    text-align:     right;
+    letter-spacing: 0;        /* was tracking-widest (0.1em) */
+    margin-bottom:  10px;     /* was 4px — more breathing room before title */
+    line-height:    1.5;
+  }
+
+  /* 3 ── Section header description: relax tight mt-1 + open Nastaliq line-height */
+  [dir="rtl"] .section-header-desc {
+    margin-top:  12px;        /* was 4px — prevents overlap with title */
+    line-height: 1.75;        /* Nastaliq body text needs generous leading */
+    text-align:  right;
+  }
+
+  /* 4 ── All headings in RTL containers: consistent Nastaliq metrics */
+  [dir="rtl"] h1,
+  [dir="rtl"] h2,
+  [dir="rtl"] h3,
+  [dir="rtl"] h4 {
+    line-height:    1.55;
+    letter-spacing: 0;
+    word-break:     keep-all;
+  }
+
+  /* 5 ── Body text and labels in RTL: slightly more leading than Latin */
+  [dir="rtl"] p,
+  [dir="rtl"] span,
+  [dir="rtl"] li {
+    line-height: 1.7;
+  }
+
+  /* 6 ── Cards: allow Nastaliq descenders to breathe; never clip tall glyphs */
+  [dir="rtl"] .card,
+  [dir="rtl"] .card-important {
+    overflow:   visible;
+    min-height: 0;            /* let content drive height, no fixed collapse */
+  }
+
+  /* 7 ── Badges / inline chips: prevent Nastaliq from being clipped by tight padding */
+  [dir="rtl"] .badge {
+    line-height:    1.6;
+    letter-spacing: 0;
+    padding-top:    3px;
+    padding-bottom: 3px;
+  }
+
+  /* 8 ── Inputs and textareas: right-align placeholder + content */
+  [dir="rtl"] input,
+  [dir="rtl"] textarea,
+  [dir="rtl"] select {
+    text-align: right;
+  }
+  [dir="rtl"] input::placeholder,
+  [dir="rtl"] textarea::placeholder {
+    text-align: right;
+  }
 }
 
 @layer utilities {

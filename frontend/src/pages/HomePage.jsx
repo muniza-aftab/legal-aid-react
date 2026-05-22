@@ -152,9 +152,9 @@ export default function HomePage() {
     <PageContainer size="full">
       {/* Hero */}
       <SectionHeader
-        eyebrow="AI-POWERED LEGAL ASSISTANCE"
-        title="Pakistan AI Legal Aid Assistant"
-        description="Chat • Analyze Documents • Connect with Legal Support"
+        eyebrow={t('hero_eyebrow')}
+        title={t('hero_title')}
+        description={t('hero_desc')}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

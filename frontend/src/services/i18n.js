@@ -34,7 +34,9 @@ const strings = {
     nav_lawyers:   'Lawyer Directory',
 
     // ── Home — hero ──────────────────────────────────────────────────────────
+    hero_eyebrow:  'AI-POWERED LEGAL ASSISTANCE',
     hero_title:    'Pakistan AI Legal Aid Assistant',
+    hero_desc:     'Chat • Analyze Documents • Connect with Legal Support',
     hero_sub:      'RAG-powered multilingual legal guidance · Free, private, accessible',
     analyze_btn:   'Analyze Case',
     clear_btn:     'Clear',
@@ -306,10 +308,12 @@ const strings = {
     nav_admin:     'ایڈمن',
     nav_analytics: 'تجزیات',
     nav_ngos:      'این جی او ڈائریکٹری',
-    nav_lawyers:   'وکلاء',
+    nav_lawyers:   'وکلاء ڈائریکٹری',
 
     // ── Home — hero ──────────────────────────────────────────────────────────
-    hero_title:    'پاکستان اے آئی قانونی مدد',
+    hero_eyebrow:  'AI سے چلنے والی قانونی مدد',
+    hero_title:    'پاکستان قانونی مدد اسسٹنٹ',
+    hero_desc:     'چیٹ • دستاویزات کا تجزیہ • قانونی مدد سے جڑیں',
     hero_sub:      'ریگ سے چلنے والی کثیر لسانی قانونی رہنمائی · مفت، نجی، قابل رسائی',
     analyze_btn:   'کیس تجزیہ کریں',
     clear_btn:     'صاف کریں',
