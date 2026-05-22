@@ -8,6 +8,7 @@ import {
 import { useAppStore } from '@/services/store'
 import { useT, isRTL } from '@/services/i18n'
 import { SectionHeader, Card, Spinner, Alert } from '@/components/ui/index'
+import { PageContainer } from '@/components/layout/PageLayout'
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 const MAX_BYTES  = 10 * 1024 * 1024
@@ -449,7 +450,7 @@ export default function DocumentAnalysisPage() {
   const ps = panelStyle(isDark)
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-6" dir={rtl ? 'rtl' : 'ltr'}>
+    <PageContainer size="medium">
       <SectionHeader
         eyebrow={t('doc_eyebrow')}
         title={t('doc_title')}
@@ -887,6 +888,6 @@ export default function DocumentAnalysisPage() {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </PageContainer>
   )
 }

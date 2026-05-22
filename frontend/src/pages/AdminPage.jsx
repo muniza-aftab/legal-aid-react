@@ -10,6 +10,7 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend,
 } from 'recharts'
 import AnalyticsPage from '@/pages/AnalyticsPage'
+import { PageContainer } from '@/components/layout/PageLayout'
 
 // ── Admin Login Gate ──────────────────────────────────────────────────────────
 function AdminLoginGate({ onLogin }) {
@@ -2054,7 +2055,7 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6">
+    <PageContainer size="full">
       <SectionHeader eyebrow="Administration" title="Admin Dashboard" />
       <AdminNav />
       <Routes>
@@ -2064,6 +2065,6 @@ export default function AdminPage() {
         <Route path="analytics" element={<AnalyticsTab />} />
         <Route path="routing" element={<RoutingTab />} />
       </Routes>
-    </div>
+    </PageContainer>
   )
 }

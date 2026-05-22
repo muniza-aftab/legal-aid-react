@@ -7,6 +7,7 @@ import { analyzeCase, downloadPDF, transcribeAudio, generateTTS } from '@/servic
 import { RiskBadge, Card, Alert, Spinner, EmptyState, SectionHeader } from '@/components/ui/index'
 import NGOList from '@/components/analytics/NGOList'
 import SourcesPanel from '@/components/chat/SourcesPanel'
+import { PageContainer } from '@/components/layout/PageLayout'
 
 // labelKey maps to i18n qcat_* keys; query object provides language-specific pre-fill text
 const CATEGORIES = [
@@ -148,12 +149,12 @@ export default function HomePage() {
   const res = analysisResult
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6" dir={rtl ? 'rtl' : 'ltr'}>
+    <PageContainer size="full">
       {/* Hero */}
       <SectionHeader
-        eyebrow="Pakistan AI Legal Aid · RAG + Groq"
-        title={t('hero_title')}
-        description={t('hero_sub')}
+        eyebrow="AI-POWERED LEGAL ASSISTANCE"
+        title="Pakistan AI Legal Aid Assistant"
+        description="Chat • Analyze Documents • Connect with Legal Support"
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -521,7 +522,7 @@ export default function HomePage() {
       <div className="mt-10 text-center text-xs py-6" style={{ color: 'var(--text-muted)', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
         {t('disclaimer')}
       </div>
-    </div>
+    </PageContainer>
   )
 }
 

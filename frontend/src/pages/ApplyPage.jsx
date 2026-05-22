@@ -8,6 +8,7 @@ import { useT, isRTL, translateCategory } from '@/services/i18n'
 import { useAppStore } from '@/services/store'
 import { submitApplication } from '@/services/api'
 import { SectionHeader, Card, Alert, Spinner } from '@/components/ui/index'
+import { PageContainer } from '@/components/layout/PageLayout'
 
 const schema = z.object({
   full_name:   z.string().min(2, 'Name is required'),
@@ -67,7 +68,7 @@ export default function ApplyPage() {
 
   if (submitted) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-16 text-center">
+      <PageContainer size="narrow" align="center" className="text-center">
         <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
           <CheckCircle size={64} className="mx-auto mb-4" style={{ color: '#34D399' }} />
           <h2 className="font-display text-2xl font-semibold mb-2">{t('apply_success_title')}</h2>
@@ -83,12 +84,12 @@ export default function ApplyPage() {
             {t('apply_again_btn')}
           </button>
         </motion.div>
-      </div>
+      </PageContainer>
     )
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-6" dir={rtl ? 'rtl' : 'ltr'}>
+    <PageContainer size="narrow" align="center">
       <SectionHeader
         eyebrow={t('apply_eyebrow')}
         title={t('apply_title')}
@@ -224,7 +225,7 @@ export default function ApplyPage() {
           </button>
         </form>
       </Card>
-    </div>
+    </PageContainer>
   )
 }
 

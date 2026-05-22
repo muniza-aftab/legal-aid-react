@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import { useT, isRTL } from '@/services/i18n'
 import { useAppStore } from '@/services/store'
 import { SectionHeader, Card } from '@/components/ui/index'
+import { PageContainer } from '@/components/layout/PageLayout'
 
 export default function AboutPage() {
   const t = useT()
@@ -18,7 +19,7 @@ export default function AboutPage() {
   ]
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-6" dir={rtl ? 'rtl' : 'ltr'}>
+    <PageContainer size="compact" align="center">
       <SectionHeader
         eyebrow={t('about_eyebrow')}
         title={t('about_title')}
@@ -76,6 +77,6 @@ export default function AboutPage() {
           </div>
         </Card>
       </div>
-    </div>
+    </PageContainer>
   )
 }

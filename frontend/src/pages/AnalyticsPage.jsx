@@ -5,6 +5,7 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend, LineChart, Line, CartesianGrid,
 } from 'recharts'
+import { PageContainer } from '@/components/layout/PageLayout'
 
 // ── Chart design tokens ───────────────────────────────────────────────────────
 
@@ -71,7 +72,7 @@ export default function AnalyticsPage() {
   const appStats = data.application_stats || {}
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6">
+    <PageContainer size="full">
       <SectionHeader
         eyebrow="Platform Analytics"
         title="Usage Analytics"
@@ -197,6 +198,6 @@ export default function AnalyticsPage() {
           </div>
         </Card>
       )}
-    </div>
+    </PageContainer>
   )
 }

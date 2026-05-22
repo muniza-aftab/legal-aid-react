@@ -5,6 +5,7 @@ import { getNGOs } from '@/services/api'
 import { useT, isRTL, translateCategory } from '@/services/i18n'
 import { useAppStore } from '@/services/store'
 import { SectionHeader, Card, Badge, Spinner, EmptyState } from '@/components/ui/index'
+import { PageContainer } from '@/components/layout/PageLayout'
 
 const CITIES = [
   'Karachi', 'Lahore', 'Islamabad', 'Rawalpindi',
@@ -59,7 +60,7 @@ export default function NGOPage() {
   )
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-6" dir={rtl ? 'rtl' : 'ltr'}>
+    <PageContainer size="medium">
       <SectionHeader
         eyebrow={t('ngo_eyebrow')}
         title={t('ngo_title')}
@@ -121,7 +122,7 @@ export default function NGOPage() {
           ))}
         </div>
       )}
-    </div>
+    </PageContainer>
   )
 }
 

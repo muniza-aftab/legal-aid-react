@@ -25,13 +25,13 @@ const strings = {
     // ── Nav ─────────────────────────────────────────────────────────────────
     nav_home:      'Home',
     nav_chat:      'Chat Assistant',
-    nav_apply:     'Get Legal Help',
+    nav_apply:     'Apply for Legal Aid',
     nav_emergency: 'Emergency',
     nav_about:     'About',
     nav_admin:     'Admin',
     nav_analytics: 'Analytics',
     nav_ngos:      'NGO Directory',
-    nav_lawyers:   'Lawyers',
+    nav_lawyers:   'Lawyer Directory',
 
     // ── Home — hero ──────────────────────────────────────────────────────────
     hero_title:    'Pakistan AI Legal Aid Assistant',

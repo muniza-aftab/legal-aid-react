@@ -5,6 +5,7 @@ import { getLawyers, getNGOs } from '@/services/api'
 import { useT, isRTL, translateCategory } from '@/services/i18n'
 import { useAppStore } from '@/services/store'
 import { SectionHeader, Spinner, Card } from '@/components/ui/index'
+import { PageContainer } from '@/components/layout/PageLayout'
 
 const CITIES = [
   '', 'Karachi', 'Lahore', 'Islamabad', 'Rawalpindi',
@@ -197,7 +198,7 @@ export default function LawyersPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-6" dir={rtl ? 'rtl' : 'ltr'}>
+    <PageContainer size="wide">
       <SectionHeader
         eyebrow={t('lawyers_eyebrow')}
         title={t('lawyers_title')}
@@ -278,6 +279,6 @@ export default function LawyersPage() {
           ))}
         </div>
       )}
-    </div>
+    </PageContainer>
   )
 }

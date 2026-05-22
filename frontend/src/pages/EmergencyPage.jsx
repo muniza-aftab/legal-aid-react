@@ -3,6 +3,7 @@ import { AlertTriangle } from 'lucide-react'
 import { useT, isRTL } from '@/services/i18n'
 import { useAppStore } from '@/services/store'
 import { SectionHeader, Card, Alert } from '@/components/ui/index'
+import { PageContainer } from '@/components/layout/PageLayout'
 
 const CONTACTS = [
   { label: 'Police',            number: '15',   icon: '🚔', color: '#a78bfa', bg: 'rgba(124,58,237,0.12)', border: 'rgba(124,58,237,0.25)' },
@@ -28,7 +29,7 @@ export default function EmergencyPage() {
   ]
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6" dir={rtl ? 'rtl' : 'ltr'}>
+    <PageContainer size="standard" align="center">
       <SectionHeader
         eyebrow={t('emergency_eyebrow')}
         title={t('emergency_title')}
@@ -89,6 +90,6 @@ export default function EmergencyPage() {
           {t('emergency_disclaimer')}
         </p>
       </Card>
-    </div>
+    </PageContainer>
   )
 }

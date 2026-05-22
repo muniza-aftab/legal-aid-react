@@ -15,15 +15,15 @@ import AIAssistantDrawer from '@/components/chat/AIAssistantDrawer'
 import FloatingAIButton from '@/components/ui/FloatingAIButton'
 
 const NAV = [
-  { href: '/home',           icon: LayoutDashboard, key: 'nav_home',      group: 'main' },
-  { action: 'openAiDrawer', icon: MessageSquare,   key: 'nav_chat',      group: 'main' },
-  { href: '/apply',          icon: FileText,        key: 'nav_apply',     group: 'main' },
-  { href: '/emergency',      icon: AlertTriangle,   key: 'nav_emergency', group: 'main' },
-  { href: '/about',          icon: Info,            key: 'nav_about',                group: 'main' },
-  { href: '/document-analysis', icon: FileSearch,  key: 'nav_document_analysis',    group: 'main' },
-  { href: '/ngos',           icon: Building2,       key: 'nav_ngos',      group: 'admin' },
-  { href: '/lawyers',        icon: Users,           key: 'nav_lawyers',   group: 'admin' },
-  { href: '/admin',          icon: Settings,        key: 'nav_admin',     group: 'admin' },
+  { href: '/home',              icon: LayoutDashboard, key: 'nav_home',              group: 'main' },
+  { action: 'openAiDrawer',    icon: MessageSquare,   key: 'nav_chat',              group: 'main' },
+  { href: '/document-analysis', icon: FileSearch,     key: 'nav_document_analysis', group: 'main' },
+  { href: '/apply',             icon: FileText,        key: 'nav_apply',             group: 'main' },
+  { href: '/lawyers',           icon: Users,           key: 'nav_lawyers',           group: 'main' },
+  { href: '/ngos',              icon: Building2,       key: 'nav_ngos',              group: 'main' },
+  { href: '/emergency',         icon: AlertTriangle,   key: 'nav_emergency',         group: 'main' },
+  { href: '/about',             icon: Info,            key: 'nav_about',             group: 'main' },
+  { href: '/admin',             icon: Settings,        key: 'nav_admin',             group: 'admin' },
 ]
 
 export default function AppLayout({ children }) {
@@ -95,7 +95,7 @@ export default function AppLayout({ children }) {
                   className="text-[9px] font-bold uppercase tracking-widest px-2 mb-2"
                   style={{ color: isDark ? 'rgba(255,255,255,0.20)' : 'rgba(15,23,42,0.35)' }}
                 >
-                  Admin & Data
+                  System
                 </div>
                 {adminNav.map(item => (
                   <NavItem key={item.href || item.action} item={item} current={location.pathname} t={t} onAction={handleNavAction} />
