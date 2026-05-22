@@ -78,7 +78,7 @@ export default function LanguagePicker() {
                 className="inline-flex items-center justify-center w-24 h-24 rounded-2xl mb-4 text-5xl shadow-2xl"
                 style={{
                   background: 'linear-gradient(135deg, #7C3AED 0%, #22D3EE 100%)',
-                  boxShadow: '0 0 60px rgba(124,58,237,0.50), 0 20px 40px rgba(0,0,0,0.5)',
+                  boxShadow: '0 0 48px rgba(124,58,237,0.40), 0 20px 40px rgba(0,0,0,0.5)',
                 }}
               >
                 ⚖️
@@ -183,17 +183,20 @@ export default function LanguagePicker() {
                   )}
                 </AnimatePresence>
 
-                <div className="mt-5 text-center space-y-1.5">
-                  <div className="flex flex-wrap justify-center items-center gap-3 text-xs" style={{ color: 'rgba(255,255,255,0.28)' }}>
-                    <span className="flex items-center gap-1"><Lock size={10} />No data stored</span>
-                    <span>·</span>
-                    <span>100% Free</span>
-                    <span>·</span>
-                    <span>Powered by Groq + FAISS</span>
+                <div className="mt-5">
+                  <div className="mb-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }} />
+                  <div className="text-center space-y-2.5">
+                    <div className="flex flex-wrap justify-center items-center gap-3 text-xs" style={{ color: 'rgba(255,255,255,0.33)' }}>
+                      <span className="flex items-center gap-1"><Lock size={10} />No data stored</span>
+                      <span>·</span>
+                      <span>100% Free</span>
+                      <span>·</span>
+                      <span>Powered by Groq + FAISS</span>
+                    </div>
+                    <p className="text-xs" style={{ color: 'rgba(255,255,255,0.24)' }}>
+                      You can change your language anytime from the sidebar settings.
+                    </p>
                   </div>
-                  <p className="text-xs" style={{ color: 'rgba(255,255,255,0.20)' }}>
-                    You can change your language anytime from the sidebar settings.
-                  </p>
                 </div>
             </motion.div>
           </motion.div>
