@@ -16,8 +16,7 @@ export default function SourcesPanel({ sources, language }) {
           initial={{ opacity: 0, y: 4 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: i * 0.05 }}
-          className="rounded-lg p-3"
-          style={{ background: 'var(--bg-subtle)', border: '1px solid var(--border-muted)' }}
+          className="card p-3"
         >
           {/* Header row: always LTR — law name left, score badge right */}
           <div className="flex items-center justify-between gap-2 mb-1" dir="ltr">

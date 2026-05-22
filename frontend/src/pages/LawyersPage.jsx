@@ -4,7 +4,7 @@ import { Search, MapPin, Building2, Scale } from 'lucide-react'
 import { getLawyers, getNGOs } from '@/services/api'
 import { useT, isRTL, translateCategory } from '@/services/i18n'
 import { useAppStore } from '@/services/store'
-import { SectionHeader, Spinner } from '@/components/ui/index'
+import { SectionHeader, Spinner, Card } from '@/components/ui/index'
 
 const CITIES = [
   '', 'Karachi', 'Lahore', 'Islamabad', 'Rawalpindi',
@@ -105,6 +105,7 @@ function LawyerCard({ lawyer, ngoName, index }) {
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.18, delay: index * 0.03 }}
+      whileHover={{ scale: 1.015, y: -2 }}
       className="card p-4 flex gap-3"
       style={{ alignItems: 'flex-start' }}
     >
@@ -204,7 +205,7 @@ export default function LawyersPage() {
       />
 
       {/* ── Filter bar ── */}
-      <div className="flex items-center gap-2 flex-wrap mb-5">
+      <Card padding="px-4 py-3" className="mb-5 flex items-center gap-2 flex-wrap">
         <div className="relative" style={{ flex: '1 1 200px', minWidth: 160 }}>
           <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
                   style={{ color: 'var(--text-muted)' }} />
@@ -252,7 +253,7 @@ export default function LawyersPage() {
             <span style={{ color: '#34D399' }}> · {availCount} {t('lawyers_avail')}</span>
           )}
         </span>
-      </div>
+      </Card>
 
       {/* ── Content ── */}
       {loading ? (

@@ -50,7 +50,7 @@ export default function EmergencyPage() {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.06 }}
-            whileHover={{ scale: 1.04, y: -3 }}
+            whileHover={{ scale: 1.015, y: -2 }}
             className="card p-4 text-center cursor-pointer block transition-all"
             style={{ background: c.bg, borderColor: c.border }}
           >

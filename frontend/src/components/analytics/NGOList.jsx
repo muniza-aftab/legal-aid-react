@@ -39,7 +39,7 @@ export default function NGOList({ ngos, caseType }) {
           initial={{ opacity: 0, x: rtl ? 6 : -6 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: i * 0.08 }}
-          className="rounded-lg p-3"
+          className="card rounded-lg p-3"
           style={{ background: 'var(--success-bg)', border: '1px solid var(--success-border)' }}
         >
           {/* NGO name row — always LTR: NGO names are English proper nouns */}

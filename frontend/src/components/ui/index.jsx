@@ -164,7 +164,7 @@ export function ProgressBar({ value, max = 100, color = 'var(--primary)', height
 // ── Section header ────────────────────────────────────────────────────────────
 export function SectionHeader({ eyebrow, title, description, actions }) {
   return (
-    <div className="flex items-start justify-between mb-6">
+    <div className="flex items-start justify-between mb-4">
       <div>
         {eyebrow && <div className="section-eyebrow">{eyebrow}</div>}
         <h1 className="section-title">{title}</h1>

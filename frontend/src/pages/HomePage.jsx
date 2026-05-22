@@ -228,7 +228,7 @@ export default function HomePage() {
               <button
                 onClick={handleAnalyze}
                 disabled={loading || query.length < 15}
-                className="btn-primary px-4 py-2 text-sm ml-auto gap-2"
+                className="btn-primary py-2 text-sm ml-auto"
               >
                 {loading ? <Spinner size={16} /> : <Search size={15} />}
                 {loading ? t('analyzing_btn') : t('analyze_btn')}
@@ -251,8 +251,8 @@ export default function HomePage() {
               {CATEGORIES.map((cat, i) => (
                 <motion.button
                   key={i}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.97 }}
+                  whileHover={{ scale: 1.015, y: -2 }}
+                  whileTap={{ scale: 0.97, y: 0 }}
                   onClick={() => setQuery(cat.query[language] || cat.query.English)}
                   className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-left transition-all duration-150"
                   style={isDark
@@ -338,7 +338,7 @@ export default function HomePage() {
                 )}
 
                 {/* Category + Risk + Confidence */}
-                <Card padding="p-5">
+                <Card padding="p-5" className="card-important">
                   {/* Primary: detected category */}
                   <div className="flex items-start justify-between gap-3 mb-3">
                     <div className="min-w-0">
@@ -415,7 +415,7 @@ export default function HomePage() {
                 </Card>
 
                 {/* Summary */}
-                <Card padding="p-4">
+                <Card padding="p-4" className="card-important">
                   <div className="flex items-center justify-between mb-2">
                     <div className="label">{t('summary_label')}</div>
                     <button
@@ -436,7 +436,7 @@ export default function HomePage() {
                 </Card>
 
                 {/* Tabs */}
-                <Card padding="p-0">
+                <Card padding="p-0" className="card-important">
                   <div className="flex items-center border-b pr-3" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
                     {['laws','rights','steps','sources'].map(tab => (
                       <button
@@ -518,13 +518,7 @@ export default function HomePage() {
       </div>
 
       {/* ── Workflow stepper ── */}
-      <div
-        className="mt-6 rounded-xl px-4 py-3.5"
-        style={{
-          background: isDark ? 'rgba(255,255,255,0.025)' : 'rgba(124,58,237,0.025)',
-          border: isDark ? '1px solid rgba(255,255,255,0.07)' : '1px solid rgba(124,58,237,0.12)',
-        }}
-      >
+      <Card padding="px-4 py-3.5" className="mt-6">
         <div className="grid grid-cols-2 gap-3 md:flex md:gap-0 md:items-center">
           {[
             { n: 1, title: t('step1_title'), desc: t('step1_desc') },
@@ -562,7 +556,7 @@ export default function HomePage() {
             </div>
           ))}
         </div>
-      </div>
+      </Card>
 
       {/* Footer */}
       <div className="mt-8 text-center text-xs py-4" style={{ color: 'var(--text-muted)', borderTop: '1px solid rgba(255,255,255,0.07)' }}>

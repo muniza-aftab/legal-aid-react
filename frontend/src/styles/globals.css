@@ -135,7 +135,7 @@
   .nav-item.active {
     background: rgba(124,58,237,0.18);
     color: #a78bfa;
-    box-shadow: inset 0 0 0 1px rgba(124,58,237,0.28);
+    box-shadow: inset 0 0 0 1px rgba(124,58,237,0.18);
   }
 
   /* ──────────────────────────────────────────────
@@ -143,11 +143,27 @@
   ────────────────────────────────────────────── */
   .card {
     border-radius: 16px;
-    border: 1px solid var(--border-default);
-    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.06);
+    background: rgba(20,24,40,0.55);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    box-shadow: 0 4px 24px rgba(0,0,0,0.38), 0 1px 0 rgba(255,255,255,0.05) inset;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.16);
+    transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+  }
+  .card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255,255,255,0.10);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.22);
+  }
+
+  /* Elevated card for results / active panels */
+  .card-important {
+    border-color: rgba(124,58,237,0.20);
+    box-shadow: 0 10px 40px rgba(124,58,237,0.08);
+  }
+  .card-important:hover {
+    border-color: rgba(124,58,237,0.28);
+    box-shadow: 0 12px 44px rgba(124,58,237,0.12);
   }
 
   /* ──────────────────────────────────────────────
@@ -168,13 +184,14 @@
      BUTTONS
   ────────────────────────────────────────────── */
   .btn-primary {
-    @apply inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white transition-all duration-200;
+    @apply inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-semibold text-white;
     background: var(--grad-primary);
-    box-shadow: 0 2px 12px rgba(124,58,237,0.30);
+    box-shadow: 0 2px 10px rgba(124,58,237,0.21);
+    transition: transform 180ms ease, box-shadow 180ms ease;
   }
   .btn-primary:hover:not(:disabled) {
-    box-shadow: 0 4px 28px rgba(124,58,237,0.55);
-    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(124,58,237,0.38);
+    transform: translateY(-2px);
   }
   .btn-primary:disabled {
     opacity: .40;
@@ -233,8 +250,8 @@
   }
   .input:focus {
     border-color: var(--border-focus);
-    box-shadow: 0 0 0 3px rgba(124,58,237,0.16);
-    background: rgba(255,255,255,0.08);
+    box-shadow: 0 0 0 2px rgba(124,58,237,0.13);
+    background: rgba(255,255,255,0.07);
   }
   .input::placeholder { color: var(--text-placeholder); }
 
@@ -269,9 +286,11 @@
      SECTION HEADERS
   ────────────────────────────────────────────── */
   .section-title {
-    @apply text-2xl font-bold tracking-tight;
+    @apply text-2xl font-bold;
     font-family: var(--font-display);
     color: var(--text-primary);
+    letter-spacing: -0.025em;
+    line-height: 1.2;
   }
   .section-eyebrow {
     @apply text-xs font-bold uppercase tracking-widest mb-1;
@@ -408,9 +427,21 @@
 
 /* Cards */
 [data-theme="light"] .card {
-  background: rgba(255,255,255,0.92);
-  border-color: rgba(0,0,0,0.09);
-  box-shadow: 0 2px 12px rgba(0,0,0,0.08), 0 1px 0 rgba(255,255,255,0.8) inset;
+  background: rgba(255,255,255,0.95);
+  border-color: rgba(0,0,0,0.08);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+}
+[data-theme="light"] .card:hover {
+  border-color: rgba(0,0,0,0.13);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.10);
+}
+[data-theme="light"] .card-important {
+  border-color: rgba(124,58,237,0.18);
+  box-shadow: 0 8px 32px rgba(124,58,237,0.06);
+}
+[data-theme="light"] .card-important:hover {
+  border-color: rgba(124,58,237,0.26);
+  box-shadow: 0 10px 36px rgba(124,58,237,0.10);
 }
 [data-theme="light"] .kpi-card {
   background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
@@ -493,7 +524,7 @@
 [data-theme="light"] .nav-item.active {
   background: rgba(124,58,237,0.18);
   color: #a78bfa;
-  box-shadow: inset 0 0 0 1px rgba(124,58,237,0.28);
+  box-shadow: inset 0 0 0 1px rgba(124,58,237,0.18);
 }
 
 /* Select option (light mode) */

@@ -26,7 +26,7 @@ export default function AboutPage() {
       />
 
       <div className="space-y-5">
-        <Card padding="p-6">
+        <Card padding="p-6" className="card-important">
           <h3 className="font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>{t('about_what_title')}</h3>
           <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
             {t('about_what_body')}
@@ -40,6 +40,7 @@ export default function AboutPage() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.06 }}
+              whileHover={{ scale: 1.015, y: -2 }}
               className="card p-4 text-center"
             >
               <div className="text-3xl mb-2">{f.icon}</div>
@@ -49,14 +50,14 @@ export default function AboutPage() {
           ))}
         </div>
 
-        <Card padding="p-6">
+        <Card padding="p-6" className="card-important">
           <h3 className="font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>{t('about_disclaimer_title')}</h3>
           <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
             {t('about_disclaimer_body')}
           </p>
         </Card>
 
-        <Card padding="p-6">
+        <Card padding="p-6" className="card-important">
           <h3 className="font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>{t('about_tech_title')}</h3>
           <div className="grid grid-cols-2 gap-2 text-sm">
             {[

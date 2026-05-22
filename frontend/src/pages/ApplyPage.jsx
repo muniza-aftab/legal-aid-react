@@ -79,7 +79,7 @@ export default function ApplyPage() {
               {t('apply_ref_id')} <strong>{submitted.app_id}</strong>
             </p>
           )}
-          <button onClick={() => setSubmitted(null)} className="btn-primary px-6 py-2">
+          <button onClick={() => setSubmitted(null)} className="btn-primary py-2">
             {t('apply_again_btn')}
           </button>
         </motion.div>

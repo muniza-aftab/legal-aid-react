@@ -135,6 +135,7 @@ function NGOCard({ ngo, index }) {
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.04 }}
+      whileHover={{ scale: 1.015, y: -2 }}
       className="card p-5"
     >
       <div className="flex items-start gap-3">

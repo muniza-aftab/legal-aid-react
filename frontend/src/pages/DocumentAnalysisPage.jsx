@@ -116,7 +116,7 @@ function LawList({ items, emptyKey, t }) {
  */
 function CollapsibleSection({ titleKey, Icon, color, bg, isOpen, onToggle, children, t, rtl }) {
   return (
-    <Card padding="p-0">
+    <Card padding="p-0" className="card-important">
       {/* Clickable header */}
       <button
         type="button"
@@ -384,14 +384,7 @@ export default function DocumentAnalysisPage() {
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click() }}
-                className="px-5 py-2 rounded-xl text-sm font-semibold transition-all duration-200"
-                style={{
-                  background: 'linear-gradient(135deg, #7C3AED 0%, #3B82F6 100%)',
-                  color: '#fff',
-                  boxShadow: '0 0 18px rgba(124,58,237,0.30)',
-                }}
-                onMouseEnter={e => e.currentTarget.style.boxShadow = '0 0 24px rgba(124,58,237,0.50)'}
-                onMouseLeave={e => e.currentTarget.style.boxShadow = '0 0 18px rgba(124,58,237,0.30)'}
+                className="btn-primary py-2"
               >
                 {t('doc_upload_label')}
               </button>
@@ -514,17 +507,7 @@ export default function DocumentAnalysisPage() {
                   type="button"
                   onClick={analyzeDocument}
                   disabled={!canAnalyze}
-                  className="px-7 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center gap-2"
-                  style={{
-                    background: canAnalyze
-                      ? 'linear-gradient(135deg, #7C3AED 0%, #2563eb 100%)'
-                      : 'rgba(255,255,255,0.06)',
-                    color:     canAnalyze ? '#fff' : 'var(--text-muted)',
-                    boxShadow: canAnalyze ? '0 0 20px rgba(124,58,237,0.35)' : 'none',
-                    cursor:    canAnalyze ? 'pointer' : 'not-allowed',
-                  }}
-                  onMouseEnter={e => { if (canAnalyze) e.currentTarget.style.boxShadow = '0 0 28px rgba(124,58,237,0.55)' }}
-                  onMouseLeave={e => { if (canAnalyze) e.currentTarget.style.boxShadow = '0 0 20px rgba(124,58,237,0.35)' }}
+                  className="btn-primary py-2.5"
                 >
                   <Scale size={15} />
                   {analysis ? t('doc_reanalyze_btn') : t('doc_analyze_btn')}

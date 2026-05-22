@@ -89,7 +89,7 @@ export default function AnalyticsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
 
         {/* Queries by Legal Category — horizontal gradient bars */}
-        <Card padding="p-5">
+        <Card padding="p-5" className="card-important">
           <div className="label mb-4">Queries by Legal Category</div>
           <ResponsiveContainer width="100%" height={240}>
             <BarChart data={catData} layout="vertical">
@@ -108,7 +108,7 @@ export default function AnalyticsPage() {
         </Card>
 
         {/* Risk Level Distribution — semantic pie */}
-        <Card padding="p-5">
+        <Card padding="p-5" className="card-important">
           <div className="label mb-4">Risk Level Distribution</div>
           <ResponsiveContainer width="100%" height={240}>
             <PieChart>
@@ -138,7 +138,7 @@ export default function AnalyticsPage() {
         </Card>
 
         {/* Language Usage — violet gradient bars */}
-        <Card padding="p-5">
+        <Card padding="p-5" className="card-important">
           <div className="label mb-4">Language Usage</div>
           <ResponsiveContainer width="100%" height={180}>
             <BarChart data={langData}>
@@ -157,7 +157,7 @@ export default function AnalyticsPage() {
         </Card>
 
         {/* Queries by City — blue gradient bars */}
-        <Card padding="p-5">
+        <Card padding="p-5" className="card-important">
           <div className="label mb-4">Queries by City</div>
           <ResponsiveContainer width="100%" height={180}>
             <BarChart data={cityData}>
@@ -178,14 +178,13 @@ export default function AnalyticsPage() {
 
       {/* Application Status Breakdown */}
       {appStats.by_status && (
-        <Card padding="p-5">
+        <Card padding="p-5" className="card-important">
           <div className="label mb-4">Application Status Breakdown</div>
           <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
             {Object.entries(appStats.by_status).map(([status, count]) => (
               <div
                 key={status}
                 className="text-center rounded-xl p-3 card"
-                style={{ background: 'rgba(255,255,255,0.04)' }}
               >
                 <div className="font-display text-2xl font-semibold" style={{ color: 'var(--text-primary)' }}>
                   {count}
