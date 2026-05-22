@@ -296,7 +296,7 @@ export default function HomePage() {
 
           {!res && !loading && (
             <EmptyState
-              icon="⚖️"
+              icon={<Scale size={44} style={{ color: 'rgba(139,92,246,0.38)', display: 'block', margin: '0 auto' }} />}
               title={t('no_results_title')}
               description={t('no_results')}
             />

@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Send, Trash2, Scale, Volume2, VolumeX } from 'lucide-react'
+import { Send, Trash2, Scale, Volume2, VolumeX, MessageSquare } from 'lucide-react'
 import { useAppStore } from '@/services/store'
 import { useT, isRTL } from '@/services/i18n'
 import { sendChatMessage, clearChatSession, generateTTS } from '@/services/api'
 import { Badge, Spinner } from '@/components/ui/index'
+import ScalesIcon from '@/components/ui/ScalesIcon'
 
 let _ctr = 0
 const uid = () => `msg-${Date.now()}-${_ctr++}`
@@ -73,10 +74,13 @@ export default function ChatAssistant({ caseContext }) {
       >
         <div className="flex items-center gap-2">
           <div
-            className="w-6 h-6 rounded-lg flex items-center justify-center text-xs"
-            style={{ background: 'linear-gradient(135deg, #7C3AED, #22D3EE)' }}
+            className="w-6 h-6 rounded-lg flex items-center justify-center"
+            style={{
+              background: 'rgba(124,58,237,0.10)',
+              border: '1px solid rgba(124,58,237,0.18)',
+            }}
           >
-            ⚖️
+            <MessageSquare size={12} style={{ color: 'rgba(167,139,250,0.70)' }} />
           </div>
           <span className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>
             {t('chat_title')}
@@ -160,10 +164,13 @@ export default function ChatAssistant({ caseContext }) {
         {loading && (
           <div className="flex items-start gap-3">
             <div
-              className="w-7 h-7 rounded-full flex items-center justify-center text-sm flex-shrink-0"
-              style={{ background: 'linear-gradient(135deg, #7C3AED, #22D3EE)' }}
+              className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
+              style={{
+                background: 'linear-gradient(145deg, #0e1a56 0%, #18106a 40%, #2b0d6e 100%)',
+                boxShadow: '0 0 0 1px rgba(124,58,237,0.40), 0 0 10px rgba(124,58,237,0.45)',
+              }}
             >
-              ⚖️
+              <ScalesIcon size={17} gid="cht" />
             </div>
             <div className="rounded-2xl rounded-tl-sm px-4 py-3" style={{ background: 'rgba(255,255,255,0.07)' }}>
               <Spinner size={16} />
@@ -257,10 +264,11 @@ function ChatMessage({ msg, rtl, language, t }) {
         style={{
           background: isUser
             ? 'linear-gradient(135deg, #7C3AED, #3B82F6)'
-            : 'linear-gradient(135deg, #22D3EE, #7C3AED)',
+            : 'linear-gradient(145deg, #0e1a56 0%, #18106a 40%, #2b0d6e 100%)',
+          boxShadow: isUser ? 'none' : '0 0 0 1px rgba(124,58,237,0.40), 0 0 10px rgba(124,58,237,0.40)',
         }}
       >
-        {isUser ? '👤' : '⚖️'}
+        {isUser ? '👤' : <ScalesIcon size={17} gid="cma" />}
       </div>
 
       <div className={`max-w-[80%] space-y-2 flex flex-col ${isUser ? 'items-end' : 'items-start'}`}>

@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Send, Trash2, Volume2, VolumeX } from 'lucide-react'
+import { X, Send, Trash2, Volume2, VolumeX, Sparkles } from 'lucide-react'
 import { useAppStore } from '@/services/store'
 import { useT, isRTL, translateCategory } from '@/services/i18n'
 import { sendChatMessage, clearChatSession, generateTTS } from '@/services/api'
 import { Spinner } from '@/components/ui/index'
+import ScalesIcon from '@/components/ui/ScalesIcon'
 
 let _ctr = 0
 const uid = () => `msg-${Date.now()}-${_ctr++}`
@@ -176,13 +177,13 @@ export default function AIAssistantDrawer() {
             >
               <div className="flex items-center gap-3 min-w-0">
                 <div
-                  className="w-8 h-8 rounded-xl flex items-center justify-center text-base flex-shrink-0"
+                  className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
                   style={{
-                    background: 'linear-gradient(135deg, #7C3AED 0%, #22D3EE 100%)',
-                    boxShadow:  '0 0 18px rgba(124,58,237,0.45)',
+                    background: 'rgba(124,58,237,0.10)',
+                    border: '1px solid rgba(124,58,237,0.18)',
                   }}
                 >
-                  ⚖️
+                  <Sparkles size={15} style={{ color: 'rgba(167,139,250,0.72)' }} />
                 </div>
                 <div className="min-w-0" dir={rtl ? 'rtl' : 'ltr'}>
                   <p className="text-sm font-semibold truncate" style={{ color: tk.titleColor }}>
@@ -303,17 +304,31 @@ function EmptyState({ t, tk, rtl, onSelectPrompt }) {
   return (
     <div className="flex flex-col items-center justify-center h-full text-center px-4 py-8">
       <motion.div
-        initial={{ scale: 0.8, opacity: 0 }}
+        initial={{ scale: 0.85, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 0.1, type: 'spring', stiffness: 260, damping: 22 }}
-        className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mb-5"
-        style={{
-          background: tk.emptyIconBg,
-          border:     `1px solid ${tk.emptyIconBorder}`,
-          boxShadow:  tk.emptyIconShadow,
-        }}
+        className="mb-5"
       >
-        ⚖️
+        <svg viewBox="0 0 72 72" width={60} height={60} fill="none" style={{ color: 'rgba(139,92,246,0.38)' }}>
+          {/* Chat bubble body */}
+          <rect x="4" y="6" width="54" height="42" rx="12"
+                stroke="currentColor" strokeWidth="1.6" fill="rgba(124,58,237,0.06)" />
+          {/* Bubble tail */}
+          <path d="M14 48 L8 62 L30 48"
+                stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"
+                fill="rgba(124,58,237,0.06)" />
+          {/* Text placeholder lines */}
+          <line x1="14" y1="21" x2="48" y2="21"
+                stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.70" />
+          <line x1="14" y1="30" x2="42" y2="30"
+                stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.48" />
+          <line x1="14" y1="39" x2="36" y2="39"
+                stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.30" />
+          {/* AI sparkle cluster (top-right) */}
+          <circle cx="62" cy="12" r="2.4" fill="currentColor" opacity="0.50" />
+          <circle cx="68" cy="22" r="1.6" fill="currentColor" opacity="0.30" />
+          <circle cx="65" cy="33" r="1.1" fill="currentColor" opacity="0.18" />
+        </svg>
       </motion.div>
 
       <p className="text-sm font-semibold mb-1.5" style={{ color: tk.emptyTitleColor }}>
@@ -366,10 +381,13 @@ function TypingIndicator({ tk }) {
   return (
     <div className="flex items-start gap-3">
       <div
-        className="w-7 h-7 rounded-full flex items-center justify-center text-sm flex-shrink-0"
-        style={{ background: 'linear-gradient(135deg, #7C3AED, #22D3EE)' }}
+        className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
+        style={{
+          background: 'linear-gradient(145deg, #0e1a56 0%, #18106a 40%, #2b0d6e 100%)',
+          boxShadow: '0 0 0 1px rgba(124,58,237,0.40), 0 0 10px rgba(124,58,237,0.45)',
+        }}
       >
-        ⚖️
+        <ScalesIcon size={17} gid="adt" />
       </div>
       <div
         className="rounded-2xl rounded-tl-sm px-4 py-3.5 flex items-center gap-1.5"
@@ -440,10 +458,11 @@ function ChatBubble({ msg, rtl, language, tk, t }) {
         style={{
           background: isUser
             ? 'linear-gradient(135deg, #7C3AED, #3B82F6)'
-            : 'linear-gradient(135deg, #22D3EE, #7C3AED)',
+            : 'linear-gradient(145deg, #0e1a56 0%, #18106a 40%, #2b0d6e 100%)',
+          boxShadow: isUser ? 'none' : '0 0 0 1px rgba(124,58,237,0.40), 0 0 10px rgba(124,58,237,0.40)',
         }}
       >
-        {isUser ? '👤' : '⚖️'}
+        {isUser ? '👤' : <ScalesIcon size={17} gid="ada" />}
       </div>
 
       {/* Content */}

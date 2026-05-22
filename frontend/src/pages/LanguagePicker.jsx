@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Lock, CheckCircle } from 'lucide-react'
 import { useAppStore } from '@/services/store'
+import ScalesIcon from '@/components/ui/ScalesIcon'
 
 /* ─── Background: flowing blue waves bottom-left ─── */
 function WavesBottomLeft() {
@@ -251,29 +252,44 @@ export default function LanguagePicker() {
                 initial={{ scale: 0.6, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.1, duration: 0.5, type: 'spring', stiffness: 180 }}
-                className="inline-flex items-center justify-center w-24 h-24 rounded-2xl mb-4 text-5xl relative"
+                className="inline-flex items-center justify-center w-24 h-24 rounded-[20px] mb-4 relative"
                 style={{
-                  background: 'linear-gradient(135deg, #1E3A8A 0%, #4C1D95 100%)',
-                  boxShadow: '0 0 0 1px rgba(139,92,246,0.30), 0 0 40px rgba(99,102,241,0.38), 0 0 80px rgba(30,58,138,0.22), 0 18px 36px rgba(0,0,0,0.65)',
+                  background: 'linear-gradient(145deg, #0e1a56 0%, #18106a 40%, #2b0d6e 100%)',
+                  boxShadow: [
+                    'inset 0 1px 0 rgba(255,255,255,0.18)',
+                    'inset 0 -1px 0 rgba(0,0,0,0.35)',
+                    '0 0 0 1px rgba(124,58,237,0.55)',
+                    '0 0 22px rgba(124,58,237,0.62)',
+                    '0 0 55px rgba(59,130,246,0.28)',
+                    '0 22px 44px rgba(0,0,0,0.72)',
+                  ].join(', '),
                 }}
               >
-                {/* Glass gloss highlight */}
+                {/* Glass gloss — top-left sweep */}
                 <div
-                  className="absolute inset-0 rounded-2xl pointer-events-none"
+                  className="absolute inset-0 rounded-[20px] pointer-events-none"
                   style={{
-                    background: 'linear-gradient(145deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.04) 45%, transparent 100%)',
+                    background: 'linear-gradient(140deg, rgba(255,255,255,0.20) 0%, rgba(255,255,255,0.06) 38%, transparent 65%)',
                   }}
                 />
-                {/* Bottom edge shine */}
+                {/* Illuminated bottom edge */}
                 <div
                   className="absolute bottom-0 left-1/2 pointer-events-none"
                   style={{
-                    width: '60%', height: '1px',
-                    background: 'linear-gradient(to right, transparent, rgba(139,92,246,0.50), transparent)',
+                    width: '55%', height: '1px',
+                    background: 'linear-gradient(to right, transparent, rgba(124,58,237,0.65), rgba(59,130,246,0.45), transparent)',
                     transform: 'translateX(-50%)',
                   }}
                 />
-                ⚖️
+                {/* Right-edge subtle blue rim */}
+                <div
+                  className="absolute top-1/4 right-0 pointer-events-none"
+                  style={{
+                    width: '1px', height: '50%',
+                    background: 'linear-gradient(to bottom, transparent, rgba(59,130,246,0.35), transparent)',
+                  }}
+                />
+                <ScalesIcon size={70} gid="lsLogo" />
               </motion.div>
 
               <motion.h1
@@ -400,12 +416,22 @@ export default function LanguagePicker() {
               className="text-center"
             >
               <div
-                className="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl mx-auto mb-5"
+                className="w-20 h-20 rounded-[20px] flex items-center justify-center mx-auto mb-5 relative overflow-hidden"
                 style={{
-                  background: 'linear-gradient(135deg, #7C3AED, #22D3EE)',
-                  boxShadow: '0 0 40px rgba(124,58,237,0.5)',
+                  background: 'linear-gradient(145deg, #0e1a56 0%, #18106a 40%, #2b0d6e 100%)',
+                  boxShadow: [
+                    'inset 0 1px 0 rgba(255,255,255,0.18)',
+                    '0 0 0 1px rgba(124,58,237,0.55)',
+                    '0 0 22px rgba(124,58,237,0.62)',
+                    '0 0 55px rgba(59,130,246,0.28)',
+                  ].join(', '),
                 }}
-              >⚖️</div>
+              >
+                <div className="absolute inset-0 pointer-events-none" style={{
+                  background: 'linear-gradient(140deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.05) 40%, transparent 65%)',
+                }} />
+                <ScalesIcon size={52} gid="lsLoad" />
+              </div>
               <p className="text-sm font-semibold" style={{ color: '#a78bfa' }}>
                 {selected === 'Urdu' ? 'لوڈ ہو رہا ہے…' : 'Loading your workspace…'}
               </p>

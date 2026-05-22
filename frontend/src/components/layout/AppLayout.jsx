@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { useAppStore } from '@/services/store'
 import { useT, isRTL } from '@/services/i18n'
+import ScalesIcon from '@/components/ui/ScalesIcon'
 import CitySelector from '@/components/ui/CitySelector'
 import LanguageSelector from '@/components/ui/LanguageSelector'
 import AIAssistantDrawer from '@/components/chat/AIAssistantDrawer'
@@ -59,13 +60,13 @@ export default function AppLayout({ children }) {
             {/* Logo */}
             <div className="flex items-center gap-3 px-4 py-5 border-b" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
               <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
+                className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
                 style={{
-                  background: 'linear-gradient(135deg, #7C3AED 0%, #3B82F6 100%)',
-                  boxShadow: '0 0 18px rgba(124,58,237,0.45)',
+                  background: 'linear-gradient(145deg, #0e1a56 0%, #18106a 40%, #2b0d6e 100%)',
+                  boxShadow: '0 0 0 1px rgba(124,58,237,0.45), 0 0 16px rgba(124,58,237,0.50), 0 0 32px rgba(59,130,246,0.22)',
                 }}
               >
-                ⚖️
+                <ScalesIcon size={22} gid="al" />
               </div>
               <div>
                 <div className="text-sm font-bold leading-tight" style={{ color: '#F1F5F9' }}>Pakistan AI</div>

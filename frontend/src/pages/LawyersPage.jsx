@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { motion } from 'framer-motion'
-import { Search, MapPin, Building2 } from 'lucide-react'
+import { Search, MapPin, Building2, Scale } from 'lucide-react'
 import { getLawyers, getNGOs } from '@/services/api'
 import { useT, isRTL, translateCategory } from '@/services/i18n'
 import { useAppStore } from '@/services/store'
@@ -259,7 +259,9 @@ export default function LawyersPage() {
         <div className="flex justify-center py-16"><Spinner size={32} /></div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-16">
-          <div className="text-3xl mb-3">⚖️</div>
+          <div className="flex justify-center mb-4">
+            <Scale size={36} style={{ color: 'rgba(139,92,246,0.32)' }} />
+          </div>
           <div className="font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>{t('lawyers_not_found')}</div>
           <div className="text-sm" style={{ color: 'var(--text-muted)' }}>{t('lawyers_adjust')}</div>
         </div>

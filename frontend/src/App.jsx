@@ -2,6 +2,7 @@ import { Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { useAppStore } from '@/services/store'
 import { api } from '@/services/api'
+import ScalesIcon from '@/components/ui/ScalesIcon'
 import AppLayout from '@/components/layout/AppLayout'
 import LanguagePicker from '@/pages/LanguagePicker'
 import HomePage from '@/pages/HomePage'
@@ -35,7 +36,15 @@ export default function App() {
   if (loading) return (
     <div className="flex items-center justify-center min-h-screen" style={{ background: '#0d1f3d' }}>
       <div className="text-center">
-        <div className="text-5xl mb-4">⚖️</div>
+        <div
+          className="w-20 h-20 rounded-[20px] flex items-center justify-center mx-auto mb-4"
+          style={{
+            background: 'linear-gradient(145deg, #0e1a56 0%, #18106a 40%, #2b0d6e 100%)',
+            boxShadow: '0 0 0 1px rgba(124,58,237,0.52), 0 0 24px rgba(124,58,237,0.58), 0 0 52px rgba(59,130,246,0.26)',
+          }}
+        >
+          <ScalesIcon size={50} gid="apx" />
+        </div>
         <p className="text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>Loading Pakistan AI Legal Aid…</p>
       </div>
     </div>
