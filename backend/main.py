@@ -309,6 +309,9 @@ async def analyze(req: AnalyzeRequest):
         "laws": result.laws or [],
         "rights": result.rights or [],
         "next_steps": result.next_steps or [],
+        # Only surface retrieved chunks as sources when the analysis actually cited
+        # laws from them — otherwise (e.g. greetings, non-legal queries) the chunks
+        # were never grounding anything and showing them is misleading.
         "sources": [
             {
                 "law_name": c.get("law_name", ""),
@@ -318,7 +321,7 @@ async def analyze(req: AnalyzeRequest):
                 "score": c.get("score", 0),
             }
             for c in (chunks or [])
-        ],
+        ] if result.laws else [],
         "ngos": ngo_list,
         "urgent_helplines": urgent or [],
     }
