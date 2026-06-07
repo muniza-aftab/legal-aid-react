@@ -5,6 +5,7 @@ The existing utils/ logic is reused as-is. This file is purely a thin API layer.
 """
 from __future__ import annotations
 import asyncio
+import functools
 import logging
 import os
 import re as _re
@@ -61,6 +62,7 @@ from app.utils.groq_client import (
     analyze_document_with_rag, DocumentAnalysis,
 )
 from app.utils.rag_engine  import retrieve, index_ready, index_stats, preprocess_query
+from app.utils.embeddings  import get_model
 from app.utils.ngo_matcher import recommend_ngos, get_urgent_helplines
 from app.utils.validator   import sanitize, ValidationError
 from app.utils.tts         import generate_tts, tts_available
@@ -114,6 +116,22 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.on_event("startup")
+async def _warmup_rag() -> None:
+    """
+    The embedding model and FAISS index are normally loaded lazily on first
+    use, which makes whichever request happens to arrive first pay a multi-
+    second loading cost synchronously. Load them here instead, before the
+    server starts accepting traffic, so every request is fast from the start.
+    """
+    try:
+        get_model()
+        index_stats()
+        logger.info("RAG warmup complete — embedding model and FAISS index pre-loaded.")
+    except Exception as e:
+        logger.warning(f"RAG warmup skipped (will lazy-load on first request instead): {e}")
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -231,12 +249,17 @@ async def analyze(req: AnalyzeRequest):
     if not index_ready():
         raise HTTPException(status_code=503, detail="RAG index not ready. Run build_index.py first.")
 
-    # Retrieve
+    # Retrieve + analyze — both are blocking calls (FAISS search + sentence
+    # encoding, then a synchronous Groq HTTP request with retry sleeps), so run
+    # them in a thread executor to avoid stalling the event loop / other requests.
+    loop = asyncio.get_running_loop()
     retrieval_q = preprocess_query(clean)
-    chunks = retrieve(retrieval_q)
+    chunks = await loop.run_in_executor(None, retrieve, retrieval_q)
 
     # Analyze
-    result: LegalAnalysis = analyze_with_rag(clean, chunks, language=req.language)
+    result: LegalAnalysis = await loop.run_in_executor(
+        None, functools.partial(analyze_with_rag, clean, chunks, language=req.language)
+    )
 
     if result.error:
         raise HTTPException(status_code=500, detail=result.error)
@@ -337,11 +360,19 @@ async def chat(req: ChatRequest):
         raise HTTPException(status_code=503, detail="RAG index not ready.")
 
     get_or_create_session(req.session_id)
-    result: ChatResponse = chat_service(
-        session_id=req.session_id,
-        message=req.message,
-        language=req.language,
-        case_context=req.case_context,
+
+    # chat_service runs RAG retrieval + a synchronous Groq HTTP call — offload it
+    # to a thread so a slow LLM response doesn't stall the whole event loop.
+    loop = asyncio.get_running_loop()
+    result: ChatResponse = await loop.run_in_executor(
+        None,
+        functools.partial(
+            chat_service,
+            session_id=req.session_id,
+            message=req.message,
+            language=req.language,
+            case_context=req.case_context,
+        ),
     )
     return {
         "reply": result.reply,
@@ -393,7 +424,12 @@ async def tts(body: dict):
         raise HTTPException(status_code=422, detail="text is required")
     if not tts_available():
         raise HTTPException(status_code=503, detail="TTS not available")
-    path = generate_tts(text, language)
+
+    # generate_tts can fall through ElevenLabs → espeak-ng → gTTS, each a blocking
+    # network/subprocess call with its own timeout — run off the event loop so a
+    # slow/unreachable backend doesn't freeze the whole server.
+    loop = asyncio.get_running_loop()
+    path = await loop.run_in_executor(None, generate_tts, text, language)
     if not path:
         raise HTTPException(status_code=500, detail="TTS generation failed")
     return FileResponse(path, media_type="audio/mpeg", filename="speech.mp3")
