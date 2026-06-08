@@ -231,10 +231,18 @@ _LANG_INSTRUCTION = {
         "stay as digits."
     ),
     "Urdu": (
-        "تمام جوابات صرف اردو رسم الخط (Unicode U+0600–U+06FF) میں دیں۔ ایک بھی انگریزی یا لاطینی لفظ استعمال نہ کریں۔ "
-        "JSON کی تمام ویلیوز اردو میں ہونی چاہئیں۔ "
-        "قانون کا نام اردو میں لکھیں (مثال: پاکستان پینل کوڈ، د چائلڈ میرج ریسٹرینٹ ایکٹ)۔ "
-        "دفعہ نمبرات انگریزی اعداد میں رہیں گے (مثال: دفعہ 506) لیکن باقی تمام متن اردو ہوگا۔"
+        "تمام جوابات صرف اردو رسم الخط (Unicode U+0600–U+06FF) میں دیں۔ "
+        "ایک بھی انگریزی یا لاطینی لفظ یا فقرہ استعمال نہ کریں — یہاں تک کہ عام جوڑنے والے الفاظ، "
+        "اصطلاحات، اور فقرے بھی نہیں۔ ہر لفظ کا اردو ترجمہ یا اردو رسم الخط میں تلفظ لکھیں، اسے "
+        "لاطینی حروف میں جوں کا توں مت چھوڑیں (مثال: 'Section' کی بجائے 'دفعہ'، 'In practice' کی "
+        "بجائے 'عملی طور پر'، 'for example' کی بجائے 'مثال کے طور پر'، 'however' کی بجائے 'تاہم')۔ "
+        "JSON کی تمام ویلیوز مکمل طور پر اردو میں ہونی چاہئیں — ایک بھی جملے کے بیچ میں انگریزی لفظ نہیں آنا چاہیے۔ "
+        "قانون کے انگریزی نام کو بھی لاطینی حروف میں مت لکھیں — اس کا تلفظ اردو رسم الخط میں لکھیں "
+        "(مثال: 'Pakistan Penal Code' کی بجائے 'پاکستان پینل کوڈ'، 'Code of Criminal Procedure' کی "
+        "بجائے 'کوڈ آف کریمنل پروسیجر'، 'The Child Marriage Restraint Act' کی بجائے "
+        "'چائلڈ میرج ریسٹرینٹ ایکٹ')۔ "
+        "دفعہ نمبرات اور سن مغربی اعداد میں رہیں گے (مثال: دفعہ 506، نومبر 2024) — یہ پاکستانی اردو "
+        "اخبارات کا معمول کا انداز ہے — لیکن نمبر کے سوا باقی تمام الفاظ اردو رسم الخط میں ہوں گے۔"
     ),
 }
 
@@ -246,8 +254,15 @@ LANGUAGE RULE — HIGHEST PRIORITY
 You will receive a language instruction at the start of the user message.
 OBEY IT ABSOLUTELY:
 • If instruction says English  → every word in JSON values must be English only.
-• If instruction says Urdu     → every word in JSON values must be Urdu script (اردو) only.
-NEVER mix scripts. NEVER insert English words into an Urdu response.
+• If instruction says Urdu     → every word in JSON values must be Urdu script (اردو) only —
+  including connectors, legal terms, and law names. Translate or transliterate EVERYTHING
+  into Urdu script; never leave an English word or phrase in Latin letters mid-sentence
+  (write 'دفعہ' not 'Section', 'عملی طور پر' not 'In practice', 'کوڈ آف کریمنل پروسیجر' not
+  'Code of Criminal Procedure'). If an English legal term has no natural Urdu equivalent,
+  transliterate its pronunciation into Urdu script — never write it in Latin letters.
+NEVER mix scripts. NEVER insert ANY English word — not even short common ones — into an
+Urdu response. A response that is 95% Urdu with a few English words sprinkled in is a
+FAILED response, not an acceptable one.
 JSON keys (summary, category, laws, etc.) stay in English — only the VALUES change language.
 
 ══════════════════════════════════════════════
@@ -1004,6 +1019,26 @@ def analyze_with_rag(
                     continue  # retry with reinforced prompt
                 # Still not Urdu on second attempt — flag and proceed
                 _lang_mismatch_note = " [تنبیہ: جواب اردو رسم الخط میں نہیں ہے]"
+                conf = "Low" if conf == "High" else conf
+            elif language == "Urdu" and _has_urdu and _has_latin:
+                # Code-switching: response is mostly Urdu but has English words/phrases
+                # mixed in mid-sentence (e.g. "Code of Criminal Procedure", "In practice").
+                if attempt == 0:
+                    _reinforce = (
+                        "\n\nCRITICAL: آپ کے جواب میں انگریزی الفاظ یا فقرے اردو جملوں کے بیچ میں "
+                        "شامل تھے — یہ ناقابلِ قبول ہے۔ ہر لفظ، بشمول جوڑنے والے الفاظ اور قانون کے "
+                        "ناموں کو، اردو رسم الخط میں دوبارہ لکھیں — کوئی بھی لفظ لاطینی حروف میں نہ ہو "
+                        "(مثال: 'Section' کی بجائے 'دفعہ'، 'In practice' کی بجائے 'عملی طور پر'، "
+                        "'Code of Criminal Procedure' کی بجائے 'کوڈ آف کریمنل پروسیجر')۔ "
+                        "صرف دفعہ نمبرات اور سن کے اعداد لاطینی ہندسوں میں رہیں گے۔"
+                        "\nRE-WRITE your entire response with ZERO English words — only digits "
+                        "(section numbers, years) may stay in Latin numerals."
+                    )
+                    user_msg = user_msg + _reinforce
+                    time.sleep(0.5)
+                    continue  # retry with reinforced prompt
+                # Still code-switching on second attempt — flag and proceed
+                _lang_mismatch_note = " [تنبیہ: جواب میں انگریزی الفاظ شامل ہیں]"
                 conf = "Low" if conf == "High" else conf
 
             if _lang_mismatch_note:
