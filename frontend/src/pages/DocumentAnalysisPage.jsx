@@ -359,6 +359,7 @@ export default function DocumentAnalysisPage() {
   const [extractError,    setExtractError]    = useState('')
 
   const [isAnalyzing,   setIsAnalyzing]   = useState(false)
+  const [isRetrying,    setIsRetrying]    = useState(false)
   const [analysis,      setAnalysis]      = useState(null)
   const [analysisError, setAnalysisError] = useState('')
 
@@ -416,6 +417,7 @@ export default function DocumentAnalysisPage() {
   const analyzeDocument = useCallback(async () => {
     if (!file || isAnalyzing) return
     setIsAnalyzing(true)
+    setIsRetrying(false)
     setAnalysisError('')
     setAnalysis(null)
     setActiveTab('analysis')
@@ -424,17 +426,39 @@ export default function DocumentAnalysisPage() {
     formData.append('file', file)
     formData.append('language', language)
 
-    try {
+    const attemptOnce = async () => {
       const resp = await fetch('/api/analyze-document', { method: 'POST', body: formData })
       if (!resp.ok) {
         const err = await resp.json().catch(() => ({}))
-        throw new Error(err.detail || t('doc_analysis_error'))
+        // err.detail is set when the FastAPI backend itself reported a structured
+        // error (validation, timeout, processing failure). An empty detail means
+        // the response wasn't JSON at all — typically a gateway error page from a
+        // free-tier host waking up from an idle spin-down, not a real app error.
+        const e = new Error(err.detail || '')
+        e.hasDetail = Boolean(err.detail)
+        throw e
       }
-      setAnalysis(await resp.json())
+      return resp.json()
+    }
+
+    try {
+      let result
+      try {
+        result = await attemptOnce()
+      } catch (firstErr) {
+        if (firstErr.hasDetail) throw firstErr
+        // Likely a cold-start gateway timeout — the server is now awake, so a
+        // single retry after a short pause almost always succeeds.
+        setIsRetrying(true)
+        await new Promise((resolve) => setTimeout(resolve, 6000))
+        result = await attemptOnce()
+      }
+      setAnalysis(result)
     } catch (err) {
       setAnalysisError(err.message || t('doc_analysis_error'))
     } finally {
       setIsAnalyzing(false)
+      setIsRetrying(false)
     }
   }, [file, isAnalyzing, language, t])
 
@@ -608,7 +632,7 @@ export default function DocumentAnalysisPage() {
               <div className="flex items-center gap-2 flex-shrink-0">
                 {isAnalyzing ? (
                   <div className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl" style={{ color: 'var(--text-muted)' }}>
-                    <Spinner size={12} /> {t('doc_analyzing')}
+                    <Spinner size={12} /> {isRetrying ? t('doc_analyzing_retry') : t('doc_analyzing')}
                   </div>
                 ) : (
                   <button type="button" onClick={analyzeDocument} disabled={!canAnalyze} className="btn-primary py-1.5 text-xs">
@@ -650,7 +674,9 @@ export default function DocumentAnalysisPage() {
             {isAnalyzing && (
               <div className="py-16 flex flex-col items-center gap-3">
                 <Spinner size={28} />
-                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{t('doc_analyzing')}</p>
+                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                  {isRetrying ? t('doc_analyzing_retry') : t('doc_analyzing')}
+                </p>
               </div>
             )}
 

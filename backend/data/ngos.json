@@ -8,7 +8,7 @@
   },
   {
     "name": "Edhi Foundation",
-    "city": "Karachi",
+    "city": "Nationwide",
     "type": "Emergency / Social Services",
     "phone": "115",
     "website": "https://edhi.org"
@@ -47,5 +47,68 @@
     "type": "Gender Violence",
     "phone": "021-35830618",
     "website": "https://war.org.pk"
+  },
+  {
+    "name": "Bedari (Awakening for Human Rights)",
+    "city": "Rawalpindi",
+    "type": "Women & Child Rights",
+    "phone": "051-4856619",
+    "website": "https://bedari.org.pk"
+  },
+  {
+    "name": "Human Rights Commission of Pakistan (HRCP) – Peshawar Regional Office",
+    "city": "Peshawar",
+    "type": "Human Rights",
+    "phone": "091-5276909",
+    "website": "https://hrcp-web.org"
+  },
+  {
+    "name": "Human Rights Commission of Pakistan (HRCP) – Quetta Regional Office",
+    "city": "Quetta",
+    "type": "Human Rights",
+    "phone": "081-2827869",
+    "website": "https://hrcp-web.org"
+  },
+  {
+    "name": "Human Rights Commission of Pakistan (HRCP) – Multan Regional Office",
+    "city": "Multan",
+    "type": "Human Rights",
+    "phone": "061-4517217",
+    "website": "https://hrcp-web.org"
+  },
+  {
+    "name": "Dar-ul-Aman Multan (Government Women's Shelter Home)",
+    "city": "Multan",
+    "type": "Women & Child Rights",
+    "phone": "061-9220532",
+    "website": ""
+  },
+  {
+    "name": "Lawyers for Human Rights and Legal Aid (LHRLA) – Faisalabad Office",
+    "city": "Faisalabad",
+    "type": "Legal Aid",
+    "phone": "041-5685824",
+    "website": ""
+  },
+  {
+    "name": "Sahil",
+    "city": "Nationwide",
+    "type": "Child & Family Protection",
+    "phone": "0800-13518",
+    "website": "https://sahil.org"
+  },
+  {
+    "name": "Digital Rights Foundation – Cyber Harassment Helpline",
+    "city": "Nationwide",
+    "type": "Cybercrime / Digital Rights",
+    "phone": "0800-39393",
+    "website": "https://digitalrightsfoundation.pk"
+  },
+  {
+    "name": "Pakistan Institute of Labour Education & Research (PILER)",
+    "city": "Karachi",
+    "type": "Labour Rights",
+    "phone": "021-36351145",
+    "website": "https://piler.org.pk"
   }
 ]

@@ -80,7 +80,7 @@ from app.utils.application_service import (
 )
 from app.utils.routing_service import (
     route_case as _route_case,
-    get_candidate_ngos, get_candidate_lawyers,
+    get_candidate_lawyers,
 )
 from app.utils.ngo_service import (
     add_ngo, update_ngo, delete_ngo, deactivate_ngo, reactivate_ngo,
@@ -277,49 +277,16 @@ async def analyze(req: AnalyzeRequest):
     except Exception:
         pass
 
-    # NGOs — prefer registered DB NGOs matched to this case; fall back to static list
-    def _db_ngo_to_unified(n: dict, case_type: str) -> dict:
-        cats = n.get("categories", [])
-        if isinstance(cats, str):
-            import json as _j
-            try: cats = _j.loads(cats)
-            except: cats = []
-        if n.get("handles_all_cases") and not cats:
-            desc = "Handles all case types"
-        elif cats:
-            desc = "Covers: " + ", ".join(cats)
-        else:
-            desc = ""
-        return {
-            "name":        n.get("ngo_name", ""),
-            "category":    cats[0] if cats else case_type,
-            "city":        n.get("city", ""),
-            "phone":       n.get("contact_phone", ""),
-            "email":       n.get("contact_email", ""),
-            "website":     "",
-            "description": desc,
-        }
-
-    try:
-        db_ngos = get_candidate_ngos(req.city or "", result.category)
-        if db_ngos:
-            ngo_list = [_db_ngo_to_unified(n, result.category) for n in db_ngos[:3]]
-        else:
-            static = recommend_ngos(result.category, city=req.city, max_results=3, risk_level=result.risk_level)
-            ngo_list = [
-                {"name": n.get("name",""), "category": n.get("category",""), "city": n.get("city",""),
-                 "phone": n.get("phone",""), "email": n.get("email",""),
-                 "website": n.get("website",""), "description": n.get("description","")}
-                for n in (static or [])
-            ]
-    except Exception:
-        static = recommend_ngos(result.category, city=req.city, max_results=3, risk_level=result.risk_level)
-        ngo_list = [
-            {"name": n.get("name",""), "category": n.get("category",""), "city": n.get("city",""),
-             "phone": n.get("phone",""), "email": n.get("email",""),
-             "website": n.get("website",""), "description": n.get("description","")}
-            for n in (static or [])
-        ]
+    # NGOs shown to real users always come from the verified ngos.json list
+    # (NOT the admin-managed DB table, which only ever holds dummy/test data
+    # entered through the Admin panel — see ngo_matcher.py "AUTHORITATIVE" note).
+    static = recommend_ngos(result.category, city=req.city, max_results=3, risk_level=result.risk_level)
+    ngo_list = [
+        {"name": n.get("name",""), "category": n.get("category",""), "city": n.get("city",""),
+         "phone": n.get("phone",""), "email": n.get("email",""),
+         "website": n.get("website",""), "description": n.get("description","")}
+        for n in (static or [])
+    ]
 
     urgent = get_urgent_helplines(result.category, result.risk_level)
 
