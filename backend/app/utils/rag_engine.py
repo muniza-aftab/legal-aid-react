@@ -36,23 +36,98 @@ _metadata: list[dict]               = []
 
 # Urdu script → expand with English legal synonyms appended
 _URDU_LEGAL_EXPANSIONS = {
-    'تنخواہ':   'salary wages payment',
-    'طلاق':     'divorce talaq',
-    'نکاح':     'marriage nikah',
-    'وراثت':    'inheritance succession',
-    'زمین':     'land property',
-    'مکان':     'house property rent',
-    'کرایہ':    'rent tenancy',
-    'گرفتاری':  'arrest detention',
-    'مزدور':    'worker labourer',
-    'ملازمت':   'employment job',
-    'عدالت':    'court tribunal',
-    'وکیل':     'lawyer advocate',
-    'دعوی':     'claim lawsuit',
-    'معاوضہ':   'compensation damages',
-    'حق':       'right entitlement',
-    'بچہ':      'child minor custody',
-    'ظلم':      'oppression harassment violence',
+    # Family Law
+    'طلاق':         'divorce talaq',
+    'خلع':          'khula divorce dissolution of marriage at instance of wife',
+    'نکاح':         'marriage nikah',
+    'مہر':          'dower mehr marriage gift',
+    'نان نفقہ':     'maintenance alimony support of wife and children',
+    'حضانت':        'custody guardianship of minor children',
+    'تحویل':        'custody guardianship possession',
+    'گھریلو تشدد':  'domestic violence',
+    'جہیز':         'dowry',
+
+    # Inheritance
+    'وراثت':        'inheritance succession',
+    'وصیت':         'will testament bequest legacy',
+
+    # Property / Tenancy
+    'زمین':         'land property',
+    'جائیداد':      'property estate assets',
+    'مکان':         'house property rent',
+    'کرایہ':        'rent tenancy',
+    'قبضہ':         'possession encroachment trespass illegal occupation',
+    'انتقال':       'mutation transfer of property registration',
+
+    # Labour
+    'تنخواہ':       'salary wages payment',
+    'اجرت':         'wages remuneration payment',
+    'مزدور':        'worker labourer',
+    'ملازمت':       'employment job',
+    'نوکری':        'job employment service',
+    'برطرفی':       'termination dismissal from employment removal from service',
+    'نکال دیا':     'termination dismissal removal from job without notice',
+
+    # Criminal Law
+    'گرفتاری':      'arrest detention',
+    'قتل':          'murder homicide qatl',
+    'اغوا':         'kidnapping abduction',
+    'چوری':         'theft stealing',
+    'ڈکیتی':        'robbery dacoity armed robbery',
+    'دھوکہ دہی':    'fraud cheating deception',
+    'جعل سازی':     'forgery counterfeiting',
+    'رشوت':         'bribery corruption illegal gratification',
+    'ہتک عزت':      'defamation harm to reputation',
+    'زیادتی':       'abuse oppression sexual assault rape excess of power',
+
+    # Cybercrime
+    'ہیک':          'hacking unauthorized access to data',
+    'ہیکنگ':        'hacking unauthorized access to data',
+    'بلیک میلنگ':   'blackmail extortion',
+    'جعلی اکاؤنٹ':  'fake account identity theft impersonation unauthorized use of identity information',
+
+    # Harassment
+    'ہراسانی':      'harassment',
+    'جنسی ہراسانی': 'sexual harassment',
+    'ظلم':          'oppression harassment violence cruelty',
+
+    # Civil Law / Procedure
+    'دعوی':         'claim lawsuit civil suit',
+    'حکم امتناعی':  'injunction stay order restraining order',
+    'ڈگری':         'decree judgment court order',
+
+    # Contract Law
+    'معاہدہ':       'contract agreement',
+    'خلاف ورزی':    'breach of contract violation of agreement',
+
+    # Consumer Rights
+    'صارف':         'consumer rights consumer protection',
+    'ناقص سامان':   'defective goods substandard products faulty merchandise',
+
+    # Constitutional Law
+    'بنیادی حقوق':  'fundamental rights constitution',
+    'آئین':         'constitution constitutional law',
+
+    # Finance / Cheques / Debt
+    'چیک':          'cheque dishonour of cheque bounced cheque',
+    'فراڈ':         'fraud cheating financial crime',
+    'قرض':          'debt loan recovery',
+
+    # Bail / Custody
+    'ضمانت':        'bail bond surety release on bail admission to bail',
+    'ضمانتی':       'bail bond surety guarantor',
+    'حراست':        'custody detention remand',
+    'حوالات':       'lockup detention custody',
+    'پیشگی ضمانت':  'anticipatory bail pre-arrest bail',
+    'رہائی':        'release discharge',
+
+    # General / Court
+    'عدالت':        'court tribunal',
+    'وکیل':         'lawyer advocate',
+    'حق':           'right entitlement',
+    'حقوق':         'rights entitlements',
+    'بچہ':          'child minor custody',
+    'معاوضہ':       'compensation damages',
 }
 
 # English colloquial phrasing → legal terminology. Bridges the vocabulary gap
