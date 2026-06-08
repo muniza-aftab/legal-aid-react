@@ -5,6 +5,7 @@ import {
   Image, Shield, Globe, BookOpen, CheckCircle, ArrowRight,
   ChevronDown, ChevronUp,
 } from 'lucide-react'
+import { api, checkHealth } from '@/services/api'
 import { useAppStore } from '@/services/store'
 import { useT, isRTL } from '@/services/i18n'
 import { SectionHeader, Card, Spinner, Alert } from '@/components/ui/index'
@@ -434,29 +435,27 @@ export default function DocumentAnalysisPage() {
       // that same slow request just repeats the same timeout. So instead, poll
       // the lightweight /api/health endpoint until the server is fully ready,
       // and only then send the real request (which then runs on a warm server).
+      // checkHealth()/api use the configured axios client, which targets the
+      // Render backend via VITE_API_URL — a bare fetch('/api/...') would resolve
+      // against this frontend's own origin instead and never reach the backend.
       const wakeDeadline = Date.now() + 120_000
-      let awake = false
       while (Date.now() < wakeDeadline) {
         try {
-          const ping = await fetch('/api/health')
-          if (ping.ok) {
-            const status = await ping.json().catch(() => ({}))
-            if (status.rag_ready) { awake = true; break }
-          }
+          const status = await checkHealth()
+          if (status?.rag_ready) break
         } catch { /* still waking up */ }
         setIsWakingServer(true)
         await new Promise((resolve) => setTimeout(resolve, 4000))
       }
-      if (!awake) setIsWakingServer(false)
+      setIsWakingServer(false)
 
-      const resp = await fetch('/api/analyze-document', { method: 'POST', body: formData })
-      if (!resp.ok) {
-        const err = await resp.json().catch(() => ({}))
-        throw new Error(err.detail || t('doc_analysis_error'))
-      }
-      setAnalysis(await resp.json())
+      const { data } = await api.post('/api/analyze-document', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 150000,
+      })
+      setAnalysis(data)
     } catch (err) {
-      setAnalysisError(err.message || t('doc_analysis_error'))
+      setAnalysisError(err.response?.data?.detail || t('doc_analysis_error'))
     } finally {
       setIsAnalyzing(false)
       setIsWakingServer(false)
