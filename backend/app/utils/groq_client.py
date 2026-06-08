@@ -21,7 +21,7 @@ CATEGORY_STRING = " | ".join(LEGAL_CASE_TYPES)
 
 from groq import Groq
 from utils.config import (
-    GROQ_API_KEY, GROQ_LLM_MODEL, GROQ_FAST_MODEL,
+    GROQ_API_KEY, GROQ_API_KEYS, GROQ_LLM_MODEL, GROQ_FAST_MODEL,
     GROQ_WHISPER_MODEL, LEGAL_CATEGORIES,
 )
 
@@ -448,12 +448,83 @@ GOOD summary (multi-fact case, Urdu — cites only laws that appear in retrieved
 "آپ کی بہن کی حیدر آباد میں 16 سال کی عمر میں جبری شادی کرائی گئی ہے اور وہ جہیز کی بدسلوکی اور دھمکیوں کا شکار ہے۔ د چائلڈ میرج ریسٹرینٹ ایکٹ کم عمر لڑکی کے ساتھ شادی کو جرم قرار دیتا ہے، پاکستان پینل کوڈ کی دفعہ 498-A جہیز کے لئے بدسلوکی کو جرم بناتی ہے، اور دفعہ 506 مجرمانہ دھمکی کو جرم بناتی ہے۔ د ڈسولیوشن آف مسلم میرجز ایکٹ 1939 کے تحت وہ شادی کی تنسیخ کی درخواست بھی دے سکتی ہے۔ نوٹ: کوئی مخصوص صوبائی ڈومیسٹک وائلنس قانون بھی لاگو ہو سکتا ہے لیکن ہماری ڈیٹابیس میں موجود نہیں — اس کے لئے براہ کرم وکیل سے رجوع کریں۔ فوری طور پر حیدر آباد کے قریبی تھانے میں ایف آئی آر درج کروائیں تاکہ وہ محفوظ طریقے سے والدین سے رابطہ کر سکے۔"
 
 ══════════════════════════════════════════════
+RIGHTS vs NEXT STEPS — THESE ANSWER DIFFERENT QUESTIONS (frequent failure mode)
+══════════════════════════════════════════════
+"rights"     = legal ENTITLEMENTS, protections, and remedies the law GIVES the
+               user — true whether or not they ever act on them.
+               Answers: "What am I owed, protected by, or able to invoke,
+               and under which law?"
+"next_steps" = the practical SEQUENCE OF ACTIONS the user should physically go
+               and do — who to approach, with what, in what order.
+               Answers: "What do I actually go and do, first / then / after that?"
+
+THE MOST COMMON FAILURE — restating the same act once as an "entitlement" and
+again as a "step", so the two lists read as near-duplicates:
+  ❌ rights:      "You have the right to report this matter to the FIA or PTA."
+  ❌ next_steps:  "Report the matter to the FIA or PTA, providing your evidence."
+  → Identical action, described twice. "A right to report" is not a real legal
+    entitlement (anyone can report anything to anyone). Reporting is an ACTION
+    → it belongs in next_steps. The matching "right" must instead name the
+    actual statutory REMEDY that the law makes available once you do report:
+  ✅ rights:      "Under PECA Section 20(2), once you report it, the Authority
+                   can order removal or blocking of the false content — this is
+                   a statutory remedy, not just a complaint going nowhere."
+  ✅ next_steps:  "File a complaint with the FIA Cybercrime Wing, attaching
+                   screenshots and message logs as evidence."
+
+SELF-CHECK — apply to every right before finalizing: "Is this naming a LEGAL
+PROTECTION, POWER, OR REMEDY that exists in the cited law — or is it secretly
+just describing an ACTION the user takes?" If it's an action, move it to
+next_steps and replace the right with the actual legal basis/remedy that makes
+taking that action meaningful (a removal power, a compensation entitlement, a
+duty the authorities owe the user, a procedural protection, etc.).
+
+TWO MORE WAYS THIS DUPLICATION SNEAKS BACK IN — CHECK BOTH:
+
+(a) SENTENCE-SKELETON REUSE between a right and its matching step. Sometimes
+    the only real entitlement genuinely IS "you may petition the Authority for
+    X" and the matching step genuinely IS "go petition the Authority for X" —
+    that pairing is fine, but ONLY if they are worded around DIFFERENT halves
+    of the idea, never the same skeleton:
+      ❌ right: "...has the right to apply to the Authority for removal,
+                 destruction, or blocking of access to the fake accounts..."
+      ❌ step:  "Report the matter to the Authority and apply for removal,
+                 destruction, or blocking of access to the fake accounts..."
+      → Same skeleton ("apply/report to the Authority for removal, destruction,
+        or blocking") repeated almost verbatim — this is the SAME sentence
+        twice and must be rewritten. Split the idea instead:
+      ✅ right: "PECA Section 16(2) does not leave it to the platform's
+                 goodwill — it obliges the Authority to issue a binding order
+                 securing, destroying, or blocking the stolen identity
+                 information once you apply, with legal force behind it."
+      ✅ step:  "Submit a written application to the PTA/FIA Cybercrime Wing
+                 citing PECA Section 16, attaching screenshots, account URLs,
+                 and message logs as proof of the unauthorized use."
+    The right talks about what the law FORCES the authority to do for you;
+    the step talks about WHERE to go, WHAT to bring, and WHICH provision to
+    cite. If you can swap a right and a step and the sentence still basically
+    works, the skeleton is shared — rewrite one side around the other half.
+
+(b) NEAR-DUPLICATE RIGHTS WITHIN THE SAME LIST. Before finalizing, compare
+    every right to every OTHER right (not just to next_steps). If two of them
+    are paraphrases of the same statutory provision or the same idea reworded
+    ("right to apply for removal of the accounts" / "right to report the
+    matter and seek removal of the accounts" — these are the same claim said
+    twice), DELETE one and replace it with a right grounded in a genuinely
+    DIFFERENT provision or protection from the sources.
+
+══════════════════════════════════════════════
 RIGHTS AND NEXT STEPS — MINIMUM REQUIREMENTS
 ══════════════════════════════════════════════
-• "rights" array: MINIMUM 4 items. Each must state a DISTINCT right under a DIFFERENT legal basis.
+• "rights" array: MINIMUM 4 items. Each must state a DISTINCT LEGAL ENTITLEMENT,
+  PROTECTION, OR REMEDY under a DIFFERENT legal basis — not an action already
+  listed in next_steps (see self-check above).
 • "next_steps" array: MINIMUM 4 items. Each must be a CONCRETE, actionable step in logical sequence.
 • DO NOT pad with generic filler — every item must add specific value.
 • Steps should escalate: immediate action → documentation → legal process → escalation if ignored.
+• No right and no step should be paraphrasable into each other — if you can swap
+  one for the other and the meaning survives, rewrite the right to state the
+  underlying entitlement instead of the act.
 
 CITATION FORMAT — STRICT (CRITICAL FOR UI RENDERING):
 Every item in the "laws" array MUST start with one of these exact patterns:
@@ -713,16 +784,62 @@ def _build_user_message(
     )
 
 
-# ── Client factory ────────────────────────────────────────────────────────────
+# ── Client factory + multi-key rotation ───────────────────────────────────────
+# GROQ_API_KEYS holds every configured key (primary + optional backups, each
+# from a SEPARATE Groq account — keys on the same account share one quota
+# pool). When the active key gets a 429 rate-limit response, we rotate to the
+# next key and retry transparently, so callers' existing retry/error-handling
+# logic only ever sees an error once every configured key is exhausted.
+_active_key_idx = 0
 
-@functools.lru_cache(maxsize=1)
+
+@functools.lru_cache(maxsize=None)
+def _client_for_key(idx: int) -> Groq:
+    return Groq(api_key=GROQ_API_KEYS[idx])
+
+
 def _get_client() -> Groq:
-    if not GROQ_API_KEY or GROQ_API_KEY == "your_groq_api_key_here":
+    if not GROQ_API_KEYS:
         raise RuntimeError(
             "GROQ_API_KEY is not set. "
             "Get a free key at https://console.groq.com and add it to .env"
         )
-    return Groq(api_key=GROQ_API_KEY)
+    return _client_for_key(_active_key_idx)
+
+
+def _is_rate_limit_error(exc: BaseException) -> bool:
+    err = str(exc)
+    return "429" in err or "rate_limit" in err.lower() or "rate limit" in err.lower()
+
+
+def _rotate_key() -> bool:
+    """Advance to the next configured Groq key. Returns False once exhausted."""
+    global _active_key_idx
+    if _active_key_idx + 1 >= len(GROQ_API_KEYS):
+        return False
+    _active_key_idx += 1
+    logger.warning(
+        "Groq rate limit hit — rotating to backup API key %d/%d",
+        _active_key_idx + 1, len(GROQ_API_KEYS),
+    )
+    return True
+
+
+def call_groq_with_rotation(make_call):
+    """
+    Run make_call(client) against the active Groq API key. On a 429
+    rate-limit response, rotates to the next configured key (if any) and
+    retries — transparent to callers, whose own retry/error-handling only
+    sees an exception once every key has been tried.
+    """
+    while True:
+        client = _get_client()
+        try:
+            return make_call(client)
+        except Exception as e:
+            if _is_rate_limit_error(e) and _rotate_key():
+                continue
+            raise
 
 
 # ── JSON extraction ───────────────────────────────────────────────────────────
@@ -767,7 +884,7 @@ def analyze_with_rag(
     Returns structured LegalAnalysis. Retries once on transient errors.
     """
     try:
-        client = _get_client()
+        _get_client()  # readiness check — raises RuntimeError if no key configured
     except RuntimeError as e:
         return LegalAnalysis(error=str(e))
 
@@ -827,7 +944,7 @@ def analyze_with_rag(
 
     for attempt in range(2):
         try:
-            response = client.chat.completions.create(
+            response = call_groq_with_rotation(lambda c: c.chat.completions.create(
                 model=GROQ_LLM_MODEL,
                 messages=[
                     {"role": "system", "content": _SYSTEM_PROMPT},
@@ -836,7 +953,7 @@ def analyze_with_rag(
                 temperature=0.15,     # low temp for factual legal responses
                 max_tokens=1800,
                 response_format={"type": "json_object"},
-            )
+            ))
             raw  = response.choices[0].message.content or ""
 
             # UTF-8 safety: re-encode to strip any corrupted bytes from API
@@ -1034,7 +1151,7 @@ def transcribe_audio(
         )
 
     try:
-        client = _get_client()
+        _get_client()  # readiness check — raises RuntimeError if no key configured
     except RuntimeError as e:
         return ("", str(e))
 
@@ -1057,14 +1174,14 @@ def transcribe_audio(
 
             logger.info(f"Whisper transcription language: {lang}")
 
-            transcription = client.audio.transcriptions.create(
+            transcription = call_groq_with_rotation(lambda c: c.audio.transcriptions.create(
                 model=GROQ_WHISPER_MODEL,
                 file=("recording.wav", f),
                 language=lang,
                 prompt=prompt,
                 response_format="text",
                 temperature=0.0,
-            )
+            ))
 
         text = str(transcription).strip()
 
@@ -1512,7 +1629,7 @@ def analyze_document_with_rag(
         )
 
     try:
-        client = _get_client()
+        _get_client()  # readiness check — raises RuntimeError if no key configured
     except RuntimeError as e:
         return DocumentAnalysis(error=str(e), disclaimer=disclaimer)
 
@@ -1539,7 +1656,7 @@ def analyze_document_with_rag(
 
     for attempt in range(2):
         try:
-            response = client.chat.completions.create(
+            response = call_groq_with_rotation(lambda c: c.chat.completions.create(
                 model=GROQ_LLM_MODEL,
                 messages=[
                     {"role": "system", "content": _DOC_ANALYSIS_SYSTEM_PROMPT},
@@ -1548,7 +1665,7 @@ def analyze_document_with_rag(
                 temperature=0.15,
                 max_tokens=1800,
                 response_format={"type": "json_object"},
-            )
+            ))
             raw = response.choices[0].message.content or ""
             try:
                 raw = raw.encode("utf-8", errors="replace").decode("utf-8")

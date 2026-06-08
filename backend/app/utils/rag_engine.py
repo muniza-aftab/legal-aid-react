@@ -55,6 +55,24 @@ _URDU_LEGAL_EXPANSIONS = {
     'ظلم':      'oppression harassment violence',
 }
 
+# English colloquial phrasing → legal terminology. Bridges the vocabulary gap
+# between how users describe a problem ("fake account pretending to be me")
+# and the statutory language that actually names it ("unauthorized use of
+# identity information" / "offences against dignity") — phrasing that embeds
+# nowhere near the relevant section text on its own.
+_ENGLISH_LEGAL_EXPANSIONS = {
+    'fake account':         'identity theft impersonation unauthorized use of identity information',
+    'fake accounts':        'identity theft impersonation unauthorized use of identity information',
+    'fake profile':         'identity theft impersonation unauthorized use of identity information',
+    'fake profiles':        'identity theft impersonation unauthorized use of identity information',
+    'pretending to be':     'impersonation identity theft offences against dignity of a person',
+    'impersonat':           'identity theft unauthorized use of identity information',
+    'using my name':        'unauthorized use of identity information',
+    'using my photo':       'offences against dignity harm to reputation',
+    'using my photos':      'offences against dignity harm to reputation',
+    'using my photographs': 'offences against dignity harm to reputation',
+}
+
 
 def preprocess_query(query: str) -> str:
     """
@@ -86,6 +104,15 @@ def preprocess_query(query: str) -> str:
         if additions:
             query = query + " " + " ".join(additions)
 
+    # ── English colloquial phrasing → legal terminology ──────────────────────
+    q_lower_for_expansion = query.lower()
+    legal_additions = [
+        expansion
+        for phrase, expansion in _ENGLISH_LEGAL_EXPANSIONS.items()
+        if phrase in q_lower_for_expansion
+    ]
+    if legal_additions:
+        query = query + " " + " ".join(dict.fromkeys(legal_additions))
 
     # ── General normalization ─────────────────────────────────────────────────
     # Expand common legal abbreviations only if not already followed by their expansion.

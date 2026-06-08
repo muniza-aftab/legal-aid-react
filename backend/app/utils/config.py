@@ -26,6 +26,32 @@ CHUNKS_FILE   = os.path.join(BASE_DIR, "data", "chunks.json")
 GROQ_API_KEY:       str = os.getenv("GROQ_API_KEY", "")
 ELEVENLABS_API_KEY: str = os.getenv("ELEVENLABS_API_KEY", "")
 
+# Optional backup Groq keys (GROQ_API_KEY_2, GROQ_API_KEY_3, ...) — each must
+# come from a SEPARATE Groq account, since keys on the same account share one
+# quota pool. GROQ_API_KEYS lists every configured key, primary first, with
+# duplicates and placeholder values removed; groq_client rotates through them
+# automatically when the active key hits a 429 rate limit.
+def _load_groq_api_keys() -> list[str]:
+    keys = [GROQ_API_KEY]
+    i = 2
+    while True:
+        extra = os.getenv(f"GROQ_API_KEY_{i}", "").strip()
+        if not extra:
+            break
+        keys.append(extra)
+        i += 1
+    seen: set[str] = set()
+    ordered: list[str] = []
+    for k in keys:
+        k = k.strip()
+        if k and k != "your_groq_api_key_here" and k not in seen:
+            seen.add(k)
+            ordered.append(k)
+    return ordered
+
+
+GROQ_API_KEYS: list[str] = _load_groq_api_keys()
+
 # ── Groq Model Config ─────────────────────────────────────────────────────────
 GROQ_LLM_MODEL    = "llama-3.3-70b-versatile"   # Main reasoning model
 GROQ_FAST_MODEL   = "llama-3.1-8b-instant"       # Fallback / fast responses

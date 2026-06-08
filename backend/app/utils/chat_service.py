@@ -66,9 +66,8 @@ import threading
 from dataclasses import dataclass, field
 from typing import Optional
 
-from groq import Groq
-
 from utils.config import GROQ_API_KEY, GROQ_LLM_MODEL, GROQ_FAST_MODEL
+from utils.groq_client import call_groq_with_rotation
 from utils.rag_engine import retrieve, preprocess_query
 from utils.validator import sanitize, ValidationError
 
@@ -1148,10 +1147,9 @@ def _call_groq(user_message: str, language: str) -> str:
     if not GROQ_API_KEY:
         raise RuntimeError("GROQ_API_KEY not configured.")
 
-    client        = Groq(api_key=GROQ_API_KEY)
     system_prompt = _CHAT_SYSTEM_PROMPT + _LANG_SUFFIX.get(language, "")
 
-    response = client.chat.completions.create(
+    response = call_groq_with_rotation(lambda c: c.chat.completions.create(
         model=GROQ_LLM_MODEL,
         messages=[
             {"role": "system", "content": system_prompt},
@@ -1159,7 +1157,7 @@ def _call_groq(user_message: str, language: str) -> str:
         ],
         temperature=0.15,
         max_tokens=900,
-    )
+    ))
     return (response.choices[0].message.content or "").strip()
 
 

@@ -257,8 +257,8 @@ def _classify_llm(text: str) -> tuple[str, float]:
     Imports Groq client dynamically so this module never hard-fails without key.
     """
     try:
-        from groq import Groq                               # type: ignore
         from utils.config import GROQ_API_KEY, GROQ_FAST_MODEL  # local import
+        from utils.groq_client import call_groq_with_rotation
     except ImportError as exc:
         logger.debug("Groq SDK not available for LLM classification: %s", exc)
         return "Unknown", 0.0
@@ -283,8 +283,7 @@ def _classify_llm(text: str) -> tuple[str, float]:
     )
 
     try:
-        client = Groq(api_key=GROQ_API_KEY)
-        response = client.chat.completions.create(
+        response = call_groq_with_rotation(lambda c: c.chat.completions.create(
             model=GROQ_FAST_MODEL,
             messages=[
                 {"role": "system", "content": system_msg},
@@ -292,7 +291,7 @@ def _classify_llm(text: str) -> tuple[str, float]:
             ],
             temperature=0.0,
             max_tokens=64,
-        )
+        ))
         raw = response.choices[0].message.content.strip()
 
         # Extract the JSON object (handles markdown code fences)
