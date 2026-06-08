@@ -1467,7 +1467,12 @@ Write as if explaining to a neighbor with no legal education:
 • What is this document and who sent it?
 • What does it demand or threaten — only what the document actually says?
 • What should the recipient do immediately?
-Use simple everyday Urdu. No English words. No legal jargon. 3–5 sentences.
+Use simple everyday Urdu. No legal jargon. 3–5 sentences.
+ZERO English code-switching: every word must be Urdu — including adjectives and connectors that
+have common English equivalents (write 'پرامن' not 'peaceful', 'باعزت' not 'respectful'). If an
+English legal term has no natural Urdu equivalent, explain the concept in Urdu words instead of
+naming it in English. Numbers/dates may use Western digits inside the Urdu sentence, as is normal
+in Pakistani Urdu (e.g. 'نومبر 2024').
 Apply the same anti-speculation rule: only describe consequences the document explicitly states.
 
 ══════════════════════════════════════════════
@@ -1559,14 +1564,30 @@ def _build_document_analysis_message(
     if language == "Urdu":
         lang_note = (
             "Write summary, key_legal_points, deadlines, procedural_guidance, and risk_indicators "
-            "in Urdu script. cited_laws entries use English law names + Urdu explanations. "
-            "urdu_explanation must be in plain Urdu (always required)."
+            "ENTIRELY in natural, everyday Urdu — every adjective, connector, and concept included. "
+            "Do NOT switch to English mid-sentence for ANY word, even common ones — translate it "
+            "(write 'پرامن' not 'peaceful', 'باعزت' not 'respectful', 'ماحول' not 'environment'). "
+            "If no single Urdu word fits, use the closest natural Urdu phrase; never fall back to "
+            "the English term. Numbers, dates, and years should use Western digits inside the Urdu "
+            "sentence exactly as Pakistani Urdu newspapers write them (e.g. 'نومبر 2024' is correct "
+            "and expected — do not invent unfamiliar numeral forms). "
+            "cited_laws entries use English law names (official titles have no Urdu equivalent) "
+            "followed by an Urdu explanation after the colon. "
+            "urdu_explanation must be in plain Urdu (always required). "
+            "PARITY — MANDATORY: cover the SAME substantive legal points, deadlines, risks, and "
+            "steps you would identify if writing in English. This is the same analysis expressed "
+            "naturally in Urdu — not a shorter, simplified, or differently-scoped version."
         )
     else:
         lang_note = (
             "Write summary, key_legal_points, deadlines, procedural_guidance, risk_indicators, "
             "and cited_laws in clear English. "
-            "urdu_explanation must be in Urdu script (always required — do not skip it)."
+            "urdu_explanation must be in Urdu script (always required — do not skip it), written "
+            "in natural everyday Urdu with NO English loanwords for common concepts — translate "
+            "every word (write 'پرامن' not 'peaceful'). Numbers/dates may use Western digits inside "
+            "the Urdu sentence as is conventional in Pakistani Urdu (e.g. 'نومبر 2024'). "
+            "PARITY — MANDATORY: urdu_explanation must cover the SAME substantive points as the "
+            "English summary/key_legal_points — the same analysis in plain Urdu, not a different one."
         )
 
     return (
