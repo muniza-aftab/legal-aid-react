@@ -65,6 +65,14 @@ _URDU_LEGAL_EXPANSIONS = {
     'کرایہ':        'rent tenancy',
     'قبضہ':         'possession encroachment trespass illegal occupation',
     'انتقال':       'mutation transfer of property registration',
+    # Natural landlord-tenant phrasing — bridges to TPA §§105-116 (leases)
+    'کرایہ دار':    'lessee tenant lease immoveable property',
+    'مالک مکان':    'lessor landlord notice to quit',
+    'کرایہ نامہ':   'lease of immoveable property duration term',
+    'سیکیورٹی ڈپازٹ': 'security deposit refund tenancy',
+    'خالی کرنا':    'determination of lease notice to quit vacation premises',
+    'بے دخل':       'eviction unlawful ejection illegal dispossession',
+    'بے دخلی':      'eviction unlawful dispossession illegal ejection',
 
     # Labour
     'تنخواہ':       'salary wages payment',
