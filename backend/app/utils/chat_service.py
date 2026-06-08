@@ -131,7 +131,11 @@ NEVER:
 ALWAYS:
   • Derive ALL legal facts (laws, sections, rights) from the retrieved context.
   • When making a practical inference (filing procedure, timeline, forum), mark it
-    clearly: "In practice..." or "The usual procedure..." — once, briefly.
+    clearly with a brief transitional phrase IN THE SAME LANGUAGE AS YOUR RESPONSE
+    — once, briefly. (English: "In practice..." / "The usual procedure...".
+    Urdu: "عملی طور پر…" / "عام طور پر اس کا طریقہ یہ ہے کہ…" — see LANGUAGE AND STYLE
+    below for the full Urdu phrase list. NEVER write the English marker phrase
+    inside an Urdu response — that breaks the language rule.)
   • End with a short reminder to consult a lawyer for specifics.
 
 ══════════════════════════════════════════════════════════════
@@ -155,7 +159,8 @@ BANNED PHRASES — never use these (they make the answer feel robotic and unhelp
 Instead, when a gap exists:
   ✓ Just say what you DO know from the retrieved laws, apply it to the user's case.
   ✓ For procedural steps not in the retrieved text, give the standard Pakistani
-    procedure once and mark it: "In practice, you would..."
+    procedure once and mark it with the transitional phrase IN YOUR RESPONSE
+    LANGUAGE — "In practice, you would..." in English, "عملی طور پر آپ کو…" in Urdu.
   ✓ If genuinely nothing in the context applies, be honest in one sentence and
     suggest a next step.
 
@@ -254,8 +259,26 @@ _LANG_SUFFIX = {
         "مثال کے طور پر:\n"
         "  ✗ 'بمطابق قانون مزید دفعات نافذ العمل ہیں' — بہت بھاری\n"
         "  ✓ 'قانون کے مطابق آپ کا پورا حق ہے کہ آپ کی تنخواہ وقت پر ملے' — سادہ اور واضح\n"
-        "قانون کا نام جیسا سیاق میں ہے ویسا ہی لکھیں (مثال: Payment of Wages Act) — ترجمہ نہ کریں۔\n"
-        "دفعہ نمبر صرف تب لکھیں جب وہ سیاق میں موجود ہو۔\n"
+        "\n"
+        "ZERO انگریزی کوڈ سوئچنگ — غیر مذاکراتی اصول:\n"
+        "ہر لفظ، جوڑنے والا لفظ، اور فقرہ اردو رسم الخط میں ہونا چاہیے — کوئی بھی انگریزی "
+        "لفظ یا فقرہ لاطینی حروف میں جملے کے بیچ میں نہیں آنا چاہیے۔ سسٹم پرامپٹ میں دی گئی "
+        "مثالیں ('In practice...', 'The usual procedure...') صرف انگریزی جوابات کے لیے ہیں — "
+        "اردو جواب میں ان کی جگہ اردو فقرے استعمال کریں، مثلاً:\n"
+        "  ✗ 'In practice, آپ کو عدالت میں پیش ہونا ہوگا' — غلط (انگریزی فقرہ بیچ میں)\n"
+        "  ✓ 'عملی طور پر، آپ کو عدالت میں پیش ہونا ہوگا' — درست\n"
+        "  ✗ 'یہ Section 499 کے تحت ہوتا ہے' کی بجائے 'یہ دفعہ 499 کے تحت ہوتا ہے' لکھیں "
+        "('Section' کی بجائے 'دفعہ')۔\n"
+        "دیگر عام مثالیں: 'however' کی بجائے 'تاہم'، 'for example' کی بجائے 'مثال کے طور پر'، "
+        "'usually' کی بجائے 'عام طور پر'۔\n"
+        "\n"
+        "قانون کا سرکاری انگریزی نام اردو رسم الخط میں اس کے تلفظ کے مطابق لکھیں — لاطینی حروف "
+        "میں نہ لکھیں (مثال: 'Payment of Wages Act' کی بجائے 'پیمنٹ آف ویجز ایکٹ'، "
+        "'Code of Criminal Procedure' کی بجائے 'کوڈ آف کریمنل پروسیجر')۔ نام کا ترجمہ مت کریں — "
+        "صرف اردو رسم الخط میں اس کا تلفظ لکھیں۔\n"
+        "دفعہ نمبر صرف تب لکھیں جب وہ سیاق میں موجود ہو — دفعہ نمبر اور سن مغربی ہندسوں میں "
+        "رہیں گے (مثال: دفعہ 499، نومبر 2024) — یہ پاکستانی اردو کا معمول کا انداز ہے۔\n"
+        "\n"
         "صارف کو براہ راست 'آپ' کہہ کر مخاطب کریں۔ 'صارف' یا 'درخواست گزار' نہ لکھیں۔\n"
         "جملے مختصر رکھیں۔ ہر بات سیدھی کہیں۔"
     ),
@@ -1137,10 +1160,19 @@ def _build_user_message(
         f"RESPOND NOW — Answer the user's query directly. Apply the retrieved laws to "
         f"THEIR specific situation (use the Active Case + Case Facts block to personalise). "
         f"Lead with what the PRIMARY laws say. If you must infer standard Pakistani "
-        f"procedure for a gap, mark it as 'In practice...' — once only. "
+        f"procedure for a gap, mark it with the transitional phrase IN {language.upper()} "
+        f"— {_practical_marker_example(language)} — once only. "
         f"End with one sentence recommending a lawyer for specifics. "
-        f"Do NOT use the banned phrases listed in your instructions."
+        f"Do NOT use the banned phrases listed in your instructions. "
+        f"Your ENTIRE response, including this marker phrase, must be in {language} — "
+        f"never write an English phrase inside a non-English response."
     )
+
+
+def _practical_marker_example(language: str) -> str:
+    return {
+        "Urdu": "'عملی طور پر…' یا 'عام طور پر اس کا طریقہ یہ ہے کہ…'",
+    }.get(language, "'In practice...' or 'The usual procedure...'")
 
 
 def _call_groq(user_message: str, language: str) -> str:
@@ -1148,17 +1180,40 @@ def _call_groq(user_message: str, language: str) -> str:
         raise RuntimeError("GROQ_API_KEY not configured.")
 
     system_prompt = _CHAT_SYSTEM_PROMPT + _LANG_SUFFIX.get(language, "")
+    msg = user_message
+    reply = ""
 
-    response = call_groq_with_rotation(lambda c: c.chat.completions.create(
-        model=GROQ_LLM_MODEL,
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user",   "content": user_message},
-        ],
-        temperature=0.15,
-        max_tokens=900,
-    ))
-    return (response.choices[0].message.content or "").strip()
+    for attempt in range(2):
+        response = call_groq_with_rotation(lambda c: c.chat.completions.create(
+            model=GROQ_LLM_MODEL,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user",   "content": msg},
+            ],
+            temperature=0.15,
+            max_tokens=900,
+        ))
+        reply = (response.choices[0].message.content or "").strip()
+
+        # Urdu code-switching guard: response is mostly Urdu but slips in raw
+        # English words/phrases mid-sentence (e.g. "In practice", "Section 499").
+        # Silently retry once with a reinforced instruction before giving up.
+        if language == "Urdu" and attempt == 0:
+            has_urdu  = bool(re.search(r'[\u0600-\u06FF]', reply))
+            has_latin = bool(re.search(r'[a-zA-Z]{3,}', reply))
+            if has_urdu and has_latin:
+                msg = msg + (
+                    "\n\nCRITICAL: آپ کے پچھلے جواب میں انگریزی الفاظ یا فقرے اردو جملوں کے "
+                    "بیچ میں شامل تھے (مثلاً 'In practice', 'Section') — یہ ناقابلِ قبول ہے۔ "
+                    "پورا جواب دوبارہ لکھیں — ہر لفظ، جوڑنے والا لفظ، اور فقرہ اردو رسم الخط "
+                    "میں ہونا چاہیے (مثال: 'In practice' کی بجائے 'عملی طور پر'، 'Section' کی "
+                    "بجائے 'دفعہ')۔ صرف دفعہ نمبرات اور سن لاطینی ہندسوں میں رہیں گے۔"
+                )
+                time.sleep(0.4)
+                continue
+        break
+
+    return reply
 
 
 def _build_sources(chunks: list[dict]) -> list[SourceDoc]:
