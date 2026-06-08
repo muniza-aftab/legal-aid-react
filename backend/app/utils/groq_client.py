@@ -999,9 +999,15 @@ def analyze_with_rag(
             _lang_mismatch_note = ""
 
             import re as _re
-            _has_urdu   = bool(_re.search(r'[\u0600-\u06FF]', summary_text))
-            _has_latin  = bool(_re.search(r'[a-zA-Z]{3,}', summary_text))
-            _has_cyril  = bool(_re.search(r'[\u0400-\u04FF]', summary_text))
+            _check_text = "\n".join([
+                summary_text,
+                *[str(x) for x in data.get("laws", [])],
+                *[str(x) for x in data.get("rights", [])],
+                *[str(x) for x in data.get("next_steps", [])],
+            ])
+            _has_urdu   = bool(_re.search(r'[\u0600-\u06FF]', _check_text))
+            _has_latin  = bool(_re.search(r'[a-zA-Z]{3,}', _check_text))
+            _has_cyril  = bool(_re.search(r'[\u0400-\u04FF]', _check_text))
 
             if _has_cyril:
                 _lang_mismatch_note = " [WARNING: response contained non-standard characters and may be unreliable]"

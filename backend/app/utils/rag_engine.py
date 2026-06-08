@@ -46,6 +46,13 @@ _URDU_LEGAL_EXPANSIONS = {
     'تحویل':        'custody guardianship possession',
     'گھریلو تشدد':  'domestic violence',
     'جہیز':         'dowry',
+    # Natural ways users describe domestic abuse without the formal compound
+    # term above (e.g. "میرے شوہر نے مجھ پر تشدد کیا" / "میرا شوہر مجھے مارتا ہے")
+    'تشدد':         'domestic violence cruelty abuse',
+    'مار پیٹ':      'beating physical assault domestic violence battery',
+    'مارتا ہے':     'beats hits physical violence domestic abuse assault',
+    'پیٹتا ہے':     'beats hits physical violence domestic abuse assault',
+    'مارتا پیٹتا':  'beats hits physical violence domestic abuse assault',
 
     # Inheritance
     'وراثت':        'inheritance succession',
