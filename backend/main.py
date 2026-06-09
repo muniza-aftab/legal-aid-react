@@ -102,7 +102,7 @@ from app.utils.legal_taxonomy import (
 
 # ── App ────────────────────────────────────────────────────────────────────────
 app = FastAPI(
-    title="Pakistan AI Legal Aid — API",
+    title="Pakistan Legal Aid AI — API",
     description="React frontend API layer wrapping the existing Python services.",
     version="1.0.0",
     docs_url="/api/docs",

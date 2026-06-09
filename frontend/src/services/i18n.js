@@ -35,7 +35,7 @@ const strings = {
 
     // ── Home — hero ──────────────────────────────────────────────────────────
     hero_eyebrow:  'AI-POWERED LEGAL ASSISTANCE',
-    hero_title:    'Pakistan AI Legal Aid Assistant',
+    hero_title:    'Pakistan Legal Aid AI Assistant',
     hero_desc:     'Chat • Analyze Documents • Connect with Legal Support',
     hero_sub:      'RAG-powered multilingual legal guidance · Free, private, accessible',
     analyze_btn:   'Analyze Case',
@@ -143,7 +143,7 @@ const strings = {
     emergency_contacts_label: 'Emergency Contacts',
     emergency_steps_label:    'What to Do in an Emergency',
     emergency_alert:          'If you are in immediate danger, call',
-    emergency_disclaimer:     'This page is for informational purposes. In life-threatening situations, always call emergency services first. Pakistan AI Legal Aid is not responsible for the accuracy of third-party contact information.',
+    emergency_disclaimer:     'This page is for informational purposes. In life-threatening situations, always call emergency services first. Pakistan Legal Aid AI is not responsible for the accuracy of third-party contact information.',
     step_prefix:              'Step',
 
     estep1_title: 'Call emergency services',
@@ -161,10 +161,10 @@ const strings = {
 
     // ── About ────────────────────────────────────────────────────────────────
     about_eyebrow:          'About',
-    about_title:            'Pakistan AI Legal Aid Assistant',
+    about_title:            'Pakistan Legal Aid AI Assistant',
     about_sub:              'RAG-powered multilingual legal guidance for Pakistan — free, private, and accessible to all.',
     about_what_title:       'What is this?',
-    about_what_body:        'Pakistan AI Legal Aid is an AI-powered platform that provides free, multilingual legal guidance to Pakistani citizens. Using Retrieval-Augmented Generation (RAG), it searches through a curated database of Pakistani laws and provides grounded, traceable legal information in both English and Urdu.',
+    about_what_body:        'Pakistan Legal Aid AI is an AI-powered platform that provides free, multilingual legal guidance to Pakistani citizens. Using Retrieval-Augmented Generation (RAG), it searches through a curated database of Pakistani laws and provides grounded, traceable legal information in both English and Urdu.',
     about_disclaimer_title: 'Legal Disclaimer',
     about_disclaimer_body:  '⚠️ This tool provides legal information only and does not replace a licensed lawyer. Always consult a qualified legal professional for advice specific to your situation. The AI responses are grounded in retrieved legal documents but may not reflect the most recent legal developments. Use this tool as a starting point, not a final authority.',
     about_tech_title:       'Technology Stack',
@@ -200,7 +200,7 @@ const strings = {
     // ── Lawyers page ─────────────────────────────────────────────────────────
     lawyers_eyebrow:    'Legal Network',
     lawyers_title:      'Lawyer Directory',
-    lawyers_sub:        'Legal professionals registered with the Pakistan AI Legal Aid network.',
+    lawyers_sub:        'Legal professionals registered with the Pakistan Legal Aid AI network.',
     lawyers_search_ph:  'Name, license, expertise…',
     lawyers_all_cities: 'All Cities',
     lawyers_all_exp:    'All Expertise',
@@ -421,7 +421,7 @@ const strings = {
     emergency_contacts_label: 'ہنگامی رابطے',
     emergency_steps_label:    'ہنگامی صورتحال میں کیا کریں',
     emergency_alert:          'اگر آپ فوری خطرے میں ہیں تو ابھی کال کریں',
-    emergency_disclaimer:     'یہ صفحہ صرف معلوماتی مقاصد کے لیے ہے۔ جان لیوا صورتحال میں ہمیشہ پہلے ہنگامی خدمات کو کال کریں۔ پاکستان اے آئی قانونی مدد فریق ثالث کی رابطہ معلومات کی درستگی کی ذمہ دار نہیں ہے۔',
+    emergency_disclaimer:     'یہ صفحہ صرف معلوماتی مقاصد کے لیے ہے۔ جان لیوا صورتحال میں ہمیشہ پہلے ہنگامی خدمات کو کال کریں۔ پاکستان قانونی مدد اے آئی فریق ثالث کی رابطہ معلومات کی درستگی کی ذمہ دار نہیں ہے۔',
     step_prefix:              'قدم',
 
     estep1_title: 'ہنگامی خدمات کو کال کریں',
@@ -439,10 +439,10 @@ const strings = {
 
     // ── About ────────────────────────────────────────────────────────────────
     about_eyebrow:          'ہمارے بارے میں',
-    about_title:            'پاکستان اے آئی قانونی مدد',
+    about_title:            'پاکستان قانونی مدد اے آئی',
     about_sub:              'پاکستان کے لیے ریگ سے چلنے والی کثیر لسانی قانونی رہنمائی — مفت، نجی اور سب کے لیے قابل رسائی۔',
     about_what_title:       'یہ کیا ہے؟',
-    about_what_body:        'پاکستان اے آئی قانونی مدد ایک اے آئی سے چلنے والا پلیٹ فارم ہے جو پاکستانی شہریوں کو مفت، کثیر لسانی قانونی رہنمائی فراہم کرتا ہے۔ ریٹریول-آگمنٹڈ جنریشن (ریگ) کا استعمال کرتے ہوئے، یہ پاکستانی قوانین کے ایک منتخب ڈیٹا بیس میں تلاش کرتا ہے اور انگریزی اور اردو دونوں میں قابل تصدیق قانونی معلومات فراہم کرتا ہے۔',
+    about_what_body:        'پاکستان قانونی مدد اے آئی ایک اے آئی سے چلنے والا پلیٹ فارم ہے جو پاکستانی شہریوں کو مفت، کثیر لسانی قانونی رہنمائی فراہم کرتا ہے۔ ریٹریول-آگمنٹڈ جنریشن (ریگ) کا استعمال کرتے ہوئے، یہ پاکستانی قوانین کے ایک منتخب ڈیٹا بیس میں تلاش کرتا ہے اور انگریزی اور اردو دونوں میں قابل تصدیق قانونی معلومات فراہم کرتا ہے۔',
     about_disclaimer_title: 'قانونی دستبرداری',
     about_disclaimer_body:  '⚠️ یہ ٹول صرف قانونی معلومات فراہم کرتا ہے اور لائسنس یافتہ وکیل کی جگہ نہیں لیتا۔ ہمیشہ اپنی صورتحال کے لیے ایک مستند قانونی پیشہ ور سے مشورہ کریں۔ اے آئی کے جوابات حاصل شدہ قانونی دستاویزات پر مبنی ہیں لیکن تازہ ترین قانونی پیشرفت کی عکاسی نہیں کر سکتے۔',
     about_tech_title:       'ٹیکنالوجی اسٹیک',
@@ -478,7 +478,7 @@ const strings = {
     // ── Lawyers page ─────────────────────────────────────────────────────────
     lawyers_eyebrow:    'قانونی نیٹ ورک',
     lawyers_title:      'وکلاء کی فہرست',
-    lawyers_sub:        'پاکستان اے آئی قانونی مدد نیٹ ورک میں رجسٹرڈ قانونی پیشہ ور۔',
+    lawyers_sub:        'پاکستان قانونی مدد اے آئی نیٹ ورک میں رجسٹرڈ قانونی پیشہ ور۔',
     lawyers_search_ph:  'نام، لائسنس، مہارت…',
     lawyers_all_cities: 'تمام شہر',
     lawyers_all_exp:    'تمام مہارتیں',

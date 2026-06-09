@@ -9,7 +9,7 @@ _BASE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__
 load_dotenv(os.path.join(_BASE, ".env"), override=False)
 
 # ── App Identity ───────────────────────────────────────────────────────────────
-APP_TITLE    = "Pakistan AI Legal Aid Assistant"
+APP_TITLE    = "Pakistan Legal Aid AI Assistant"
 APP_SUBTITLE = "RAG-powered multilingual legal guidance system"
 APP_VERSION  = "2.0.0 – RAG + Groq"
 APP_EMOJI    = "⚖️"

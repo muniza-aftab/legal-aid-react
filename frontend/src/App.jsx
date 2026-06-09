@@ -57,7 +57,7 @@ export default function App() {
         >
           <ScalesIcon size={50} gid="apx" />
         </div>
-        <p className="text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>Loading Pakistan AI Legal Aid…</p>
+        <p className="text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>Loading Pakistan Legal Aid AI…</p>
       </div>
     </div>
   )

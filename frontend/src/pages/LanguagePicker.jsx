@@ -319,7 +319,7 @@ export default function LanguagePicker() {
                 className="font-urdu text-xl mb-3"
                 style={{ color: 'rgba(255,255,255,0.68)', direction: 'rtl' }}
               >
-                پاکستان اے آئی قانونی مدد
+                پاکستان قانونی مدد اے آئی
               </motion.p>
 
               <motion.div

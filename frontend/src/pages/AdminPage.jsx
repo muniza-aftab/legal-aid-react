@@ -1055,6 +1055,29 @@ function LawyerFormModal({ lawyer, onSave, onClose, saving, error }) {
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
+  // Derive which categories are available based on the selected NGO.
+  // If no NGO selected, or NGO handles all cases → show all categories.
+  const selectedNgo = ngos.find(n => n.ngo_id === form.ngo_id)
+  const ngoFiltered = Boolean(selectedNgo && !selectedNgo.handles_all_cases)
+  const availableCategories = ngoFiltered
+    ? LAWYER_CATEGORIES.filter(c =>
+        Array.isArray(selectedNgo.categories) && selectedNgo.categories.includes(c)
+      )
+    : LAWYER_CATEGORIES
+
+  // When NGO changes, also clear expertise_main if it's no longer available.
+  const handleNgoChange = (ngoId) => {
+    const ngo = ngos.find(n => n.ngo_id === ngoId)
+    const allowed = !ngoId || !ngo || ngo.handles_all_cases
+      ? LAWYER_CATEGORIES
+      : (Array.isArray(ngo.categories) ? ngo.categories : [])
+    setForm(f => ({
+      ...f,
+      ngo_id: ngoId,
+      expertise_main: allowed.includes(f.expertise_main) ? f.expertise_main : '',
+    }))
+  }
+
   const handleSubmit = (e) => { e.preventDefault(); onSave(form) }
 
   const licPlaceholder = BAR_LICENSE_HINT[form.city] || 'e.g. LHC-1056'
@@ -1123,27 +1146,32 @@ function LawyerFormModal({ lawyer, onSave, onClose, saving, error }) {
             </div>
           </div>
 
-          {/* Category */}
-          <div>
-            <label className="label mb-1 block">Category / Expertise *</label>
-            <select className="input" value={form.expertise_main} onChange={e => set('expertise_main', e.target.value)} required>
-              <option value="">— Select category —</option>
-              {LAWYER_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
-          </div>
-
-          {/* Assign to NGO */}
+          {/* Assign to NGO — shown first so category list can be filtered */}
           <div>
             <label className="label mb-1 block">
               Assign to NGO
               <span className="ml-1 font-normal text-[10px]" style={{ color: 'var(--text-muted)' }}>(optional)</span>
             </label>
-            <select className="input" value={form.ngo_id} onChange={e => set('ngo_id', e.target.value)}>
+            <select className="input" value={form.ngo_id} onChange={e => handleNgoChange(e.target.value)}>
               <option value="">— No NGO —</option>
               {ngos.filter(n => n.active !== 0).map(n => (
                 <option key={n.ngo_id} value={n.ngo_id}>{n.ngo_name}{n.city ? ` · ${n.city}` : ''}</option>
               ))}
             </select>
+          </div>
+
+          {/* Category — filtered to NGO's case types when an NGO is selected */}
+          <div>
+            <label className="label mb-1 block">Category / Expertise *</label>
+            <select className="input" value={form.expertise_main} onChange={e => set('expertise_main', e.target.value)} required>
+              <option value="">— Select category —</option>
+              {availableCategories.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+            {ngoFiltered && (
+              <p className="mt-1 text-[10px]" style={{ color: 'var(--text-muted)' }}>
+                Showing {availableCategories.length} of {LAWYER_CATEGORIES.length} categories handled by {selectedNgo.ngo_name}
+              </p>
+            )}
           </div>
 
           {/* Available toggle (edit only) */}
