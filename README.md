@@ -1,12 +1,43 @@
+<div align="center">
+
 # ⚖️ Pakistan AI Legal Aid Assistant
 
-> RAG-powered multilingual legal guidance for Pakistan  
-> **React 18 · FastAPI · Groq LLM · FAISS · English / اردو**
+### RAG-powered multilingual legal guidance for Pakistan
+**React 18 · FastAPI · Groq LLM · FAISS · English / اردو**
+
+[![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=white)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-5-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![Groq](https://img.shields.io/badge/Groq-Llama_3.3_70B-C9A84C?style=flat-square&labelColor=1E3A6E)](https://groq.com/)
+[![FAISS](https://img.shields.io/badge/FAISS-Vector_Search-C9A84C?style=flat-square&labelColor=1E3A6E)](https://github.com/facebookresearch/faiss)
+
+[![Live Demo](https://img.shields.io/badge/Live_Demo-legal--aid--react.vercel.app-C9A84C?style=flat-square&labelColor=1E3A6E&logo=vercel&logoColor=white)](https://legal-aid-react.vercel.app/)
+
+</div>
 
 A full-stack AI legal aid application that helps Pakistani citizens understand their legal rights. Users describe a legal problem in English or Urdu and receive a risk assessment, applicable law citations, rights summary, recommended NGOs, and a matched lawyer list — all driven by retrieval-augmented generation over a corpus of Pakistani law documents.
 
 ---
-Live Demo: https://legal-aid-react.vercel.app/
+
+## Table of Contents
+
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Repository Structure](#repository-structure)
+- [Setup — Windows](#setup--windows)
+- [Setup — macOS / Linux](#setup--macos--linux)
+- [Environment Variables](#environment-variables)
+- [API Endpoints](#api-endpoints)
+- [Multilingual / RTL Support](#multilingual--rtl-support)
+- [Application Routes](#application-routes)
+- [RAG Pipeline](#rag-pipeline)
+- [Production Build](#production-build)
+- [Troubleshooting](#troubleshooting)
+- [Quick Reference](#quick-reference)
+- [License](#license)
+
+---
 
 ## Features
 

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Routes, Route, useNavigate, Link, useLocation } from 'react-router-dom'
-import { Lock, LayoutDashboard, Building2, Users, BarChart3, Route as RouteIcon, Plus, Pencil, Trash2, X, Check, Search, ToggleLeft, ToggleRight, RefreshCw, Settings2, Eye } from 'lucide-react'
+import { Lock, LayoutDashboard, Building2, Users, BarChart3, Route as RouteIcon, Plus, Pencil, Trash2, X, Check, Search, ToggleLeft, ToggleRight, RefreshCw, Settings2, Eye, Home, LogOut, Sun, Moon } from 'lucide-react'
 import { useAppStore } from '@/services/store'
 import { adminLogin, getApplicationStats, getApplications, updateApplicationStatus, assignLawyer, assignNGO, getNGOs, getLawyers, createNGO, updateNGO, deleteNGO, deactivateNGO, reactivateNGO, createLawyer, updateLawyer, deleteLawyer, setLawyerAvailability, rerouteApplication } from '@/services/api'
 import { KPICard, Card, SectionHeader, StatusBadge, RiskBadge, Badge, Spinner, Alert } from '@/components/ui/index'
@@ -11,6 +11,7 @@ import {
 } from 'recharts'
 import AnalyticsPage from '@/pages/AnalyticsPage'
 import { PageContainer } from '@/components/layout/PageLayout'
+import ScalesIcon from '@/components/ui/ScalesIcon'
 
 // ── Admin Login Gate ──────────────────────────────────────────────────────────
 function AdminLoginGate({ onLogin }) {
@@ -76,7 +77,7 @@ function AdminNav() {
   return (
     <div className="flex gap-1 border-b mb-6 overflow-x-auto" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
       {TABS.map(tab => {
-        const href = `/admin${tab.path ? '/' + tab.path : ''}`
+        const href = `/admin-portal${tab.path ? '/' + tab.path : ''}`
         const active = location.pathname === href
         return (
           <Link
@@ -2075,25 +2076,100 @@ function AnalyticsTab() {
   return <div dir="ltr"><AnalyticsPage /></div>
 }
 
+// ── Admin Portal Header ───────────────────────────────────────────────────────
+function AdminHeader({ isDark, toggleTheme, onLogout }) {
+  return (
+    <header
+      className="sticky top-0 z-30 flex items-center justify-between px-5 gap-3"
+      style={{
+        height: 56,
+        background: isDark ? 'rgba(7,13,26,0.82)' : 'rgba(248,250,252,0.90)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        borderBottom: isDark ? '1px solid rgba(255,255,255,0.07)' : '1px solid rgba(0,0,0,0.08)',
+      }}
+    >
+      <div className="flex items-center gap-3">
+        <div
+          className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+          style={{
+            background: 'linear-gradient(145deg, #0e1a56 0%, #18106a 40%, #2b0d6e 100%)',
+            boxShadow: isDark
+              ? '0 0 0 1px rgba(124,58,237,0.45), 0 0 16px rgba(124,58,237,0.50), 0 0 32px rgba(59,130,246,0.22)'
+              : '0 0 0 1px rgba(124,58,237,0.22), 0 2px 8px rgba(124,58,237,0.10)',
+          }}
+        >
+          <ScalesIcon size={20} gid="adp" />
+        </div>
+        <div>
+          <div className="text-sm font-bold leading-tight" style={{ color: isDark ? '#F1F5F9' : '#0F172A' }}>Pakistan Legal Aid</div>
+          <div className="text-[11px]" style={{ color: isDark ? 'rgba(255,255,255,0.32)' : 'rgba(15,23,42,0.45)' }}>Admin Portal</div>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-1">
+        <Link
+          to="/home"
+          className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl transition-colors"
+          style={{ color: 'var(--text-muted)' }}
+          onMouseEnter={e => e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.05)'}
+          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+        >
+          <Home size={13} /> Back to Site
+        </Link>
+        <button
+          onClick={toggleTheme}
+          className="p-2 rounded-xl transition-colors"
+          title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+          style={{ color: isDark ? '#FCD34D' : '#7C3AED' }}
+          onMouseEnter={e => e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.05)'}
+          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+        >
+          {isDark ? <Sun size={16} /> : <Moon size={16} />}
+        </button>
+        <button
+          onClick={onLogout}
+          className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl transition-colors"
+          style={{ color: '#f87171' }}
+          onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.10)'}
+          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+        >
+          <LogOut size={13} /> Logout
+        </button>
+      </div>
+    </header>
+  )
+}
+
 // ── Main Admin Page ───────────────────────────────────────────────────────────
 export default function AdminPage() {
-  const { adminAuthenticated, setAdminAuth } = useAppStore()
+  const { adminAuthenticated, setAdminAuth, clearAdminAuth, theme, toggleTheme } = useAppStore()
+  const navigate = useNavigate()
+  const isDark = theme === 'dark'
 
   if (!adminAuthenticated) {
     return <AdminLoginGate onLogin={setAdminAuth} />
   }
 
+  const handleLogout = () => {
+    clearAdminAuth()
+    navigate('/admin-portal')
+  }
+
   return (
-    <PageContainer size="full" dir="ltr">
-      <SectionHeader eyebrow="Administration" title="Admin Dashboard" />
-      <AdminNav />
-      <Routes>
-        <Route index element={<DashboardTab />} />
-        <Route path="ngos" element={<NGOTab />} />
-        <Route path="lawyers" element={<LawyersTab />} />
-        <Route path="analytics" element={<AnalyticsTab />} />
-        <Route path="routing" element={<RoutingTab />} />
-      </Routes>
-    </PageContainer>
+    <div dir="ltr" style={{ minHeight: '100vh', background: 'var(--bg-page)' }}>
+      <AdminHeader isDark={isDark} toggleTheme={toggleTheme} onLogout={handleLogout} />
+      <PageContainer size="full" dir="ltr">
+        <SectionHeader eyebrow="Administration" title="Admin Dashboard" />
+        <AdminNav />
+        <Routes>
+          <Route index element={<DashboardTab />} />
+          <Route path="ngos" element={<NGOTab />} />
+          <Route path="lawyers" element={<LawyersTab />} />
+          <Route path="analytics" element={<AnalyticsTab />} />
+          <Route path="routing" element={<RoutingTab />} />
+        </Routes>
+      </PageContainer>
+    </div>
   )
 }

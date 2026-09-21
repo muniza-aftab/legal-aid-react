@@ -172,7 +172,7 @@ export default function AIAssistantDrawer() {
 
             {/* ── Header ── */}
             <div
-              className="flex items-center justify-between px-5 py-4 flex-shrink-0 border-b"
+              className={`flex items-center justify-between px-5 py-4 flex-shrink-0 border-b ${rtl ? 'flex-row-reverse' : ''}`}
               style={{ borderColor: tk.headerBorderColor }}
             >
               <div className="flex items-center gap-3 min-w-0">
@@ -201,7 +201,7 @@ export default function AIAssistantDrawer() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-1 flex-shrink-0 ml-2">
+              <div className={`flex items-center gap-1 flex-shrink-0 ${rtl ? 'mr-2' : 'ml-2'}`}>
                 <button
                   onClick={handleClear}
                   title={t('chat_clear')}
@@ -428,7 +428,10 @@ function ChatBubble({ msg, rtl, language, tk, t }) {
 
   const handleListen = async () => {
     if (ttsState === 'playing') {
-      audioRef.current?.pause(); audioRef.current = null; setTtsState('idle'); return
+      audioRef.current?.pause(); return
+    }
+    if (ttsState === 'paused') {
+      audioRef.current?.play(); return
     }
     if (ttsState === 'loading') return
     setTtsState('loading')
@@ -438,6 +441,7 @@ function ChatBubble({ msg, rtl, language, tk, t }) {
       const audio = new Audio(url)
       audioRef.current = audio
       audio.onplay  = () => setTtsState('playing')
+      audio.onpause = () => { if (!audio.ended) setTtsState('paused') }
       audio.onended = () => { URL.revokeObjectURL(url); audioRef.current = null; setTtsState('idle') }
       audio.onerror = () => { URL.revokeObjectURL(url); audioRef.current = null; setTtsState('idle') }
       audio.play()
@@ -513,14 +517,14 @@ function ChatBubble({ msg, rtl, language, tk, t }) {
                 border:     `1px solid ${ttsState === 'playing' ? 'rgba(220,38,38,0.28)' : tk.listenBorder}`,
               }}
               onMouseEnter={e => {
-                if (ttsState === 'idle') {
+                if (ttsState === 'idle' || ttsState === 'paused') {
                   e.currentTarget.style.background   = tk.listenHoverBg
                   e.currentTarget.style.color        = tk.listenHoverColor
                   e.currentTarget.style.borderColor  = tk.listenHoverBorder
                 }
               }}
               onMouseLeave={e => {
-                if (ttsState === 'idle') {
+                if (ttsState === 'idle' || ttsState === 'paused') {
                   e.currentTarget.style.background  = tk.listenBg
                   e.currentTarget.style.color       = tk.listenColor
                   e.currentTarget.style.borderColor = tk.listenBorder

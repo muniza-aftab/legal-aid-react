@@ -1,0 +1,171 @@
+2026-06-10 15:38:00,149 [INFO] faiss.loader: Loading faiss with AVX2 support.
+2026-06-10 15:38:00,233 [INFO] faiss.loader: Successfully loaded faiss with AVX2 support.
+INFO:     Started server process [10708]
+INFO:     Waiting for application startup.
+2026-06-10 15:38:10,806 [INFO] app.utils.embeddings: Loading embedding model: sentence-transformers/all-MiniLM-L6-v2
+2026-06-10 15:38:10,806 [INFO] sentence_transformers.base.model: No device provided, using cpu
+2026-06-10 15:38:11,935 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/modules.json "HTTP/1.1 307 Temporary Redirect"
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+2026-06-10 15:38:11,947 [WARNING] huggingface_hub.utils._http: Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+2026-06-10 15:38:12,147 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/modules.json "HTTP/1.1 200 OK"
+2026-06-10 15:38:12,553 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/config_sentence_transformers.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-10 15:38:12,760 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/config_sentence_transformers.json "HTTP/1.1 200 OK"
+2026-06-10 15:38:12,760 [INFO] sentence_transformers.base.model: Loading SentenceTransformer model from sentence-transformers/all-MiniLM-L6-v2.
+2026-06-10 15:38:13,165 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/config_sentence_transformers.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-10 15:38:13,370 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/config_sentence_transformers.json "HTTP/1.1 200 OK"
+2026-06-10 15:38:13,784 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/README.md "HTTP/1.1 307 Temporary Redirect"
+2026-06-10 15:38:13,981 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/README.md "HTTP/1.1 200 OK"
+2026-06-10 15:38:14,389 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/modules.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-10 15:38:14,507 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/modules.json "HTTP/1.1 200 OK"
+2026-06-10 15:38:14,906 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/sentence_bert_config.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-10 15:38:15,113 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/sentence_bert_config.json "HTTP/1.1 200 OK"
+2026-06-10 15:38:15,518 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/adapter_config.json "HTTP/1.1 404 Not Found"
+2026-06-10 15:38:15,932 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-10 15:38:16,135 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/config.json "HTTP/1.1 200 OK"
+Loading weights:   0%|          | 0/103 [00:00<?, ?it/s]Loading weights: 100%|##########| 103/103 [00:00<00:00, 2425.37it/s]
+2026-06-10 15:38:16,748 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/processor_config.json "HTTP/1.1 404 Not Found"
+2026-06-10 15:38:17,152 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/preprocessor_config.json "HTTP/1.1 404 Not Found"
+2026-06-10 15:38:17,579 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/video_preprocessor_config.json "HTTP/1.1 404 Not Found"
+2026-06-10 15:38:17,982 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/preprocessor_config.json "HTTP/1.1 404 Not Found"
+2026-06-10 15:38:18,382 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/tokenizer_config.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-10 15:38:18,690 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/tokenizer_config.json "HTTP/1.1 200 OK"
+2026-06-10 15:38:19,106 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-10 15:38:19,205 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/config.json "HTTP/1.1 200 OK"
+2026-06-10 15:38:19,635 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-10 15:38:19,815 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/config.json "HTTP/1.1 200 OK"
+2026-06-10 15:38:20,240 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/tokenizer_config.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-10 15:38:20,437 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/tokenizer_config.json "HTTP/1.1 200 OK"
+2026-06-10 15:38:20,848 [INFO] httpx: HTTP Request: GET https://huggingface.co/api/models/sentence-transformers/all-MiniLM-L6-v2/tree/main/additional_chat_templates?recursive=false&expand=false "HTTP/1.1 404 Not Found"
+2026-06-10 15:38:21,256 [INFO] httpx: HTTP Request: GET https://huggingface.co/api/models/sentence-transformers/all-MiniLM-L6-v2/tree/main?recursive=true&expand=false "HTTP/1.1 200 OK"
+2026-06-10 15:38:21,773 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/1_Pooling/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-10 15:38:21,971 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/1_Pooling%2Fconfig.json "HTTP/1.1 200 OK"
+2026-06-10 15:38:22,381 [INFO] httpx: HTTP Request: GET https://huggingface.co/api/models/sentence-transformers/all-MiniLM-L6-v2 "HTTP/1.1 200 OK"
+2026-06-10 15:38:22,398 [INFO] app.utils.embeddings: Embedding model loaded.
+2026-06-10 15:38:22,920 [INFO] app.utils.rag_engine: FAISS index loaded: 10,498 vectors
+2026-06-10 15:38:22,934 [INFO] main: RAG warmup complete — embedding model and FAISS index pre-loaded.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+2026-06-10 15:38:37,698 [INFO] utils.embeddings: Loading embedding model: sentence-transformers/all-MiniLM-L6-v2
+2026-06-10 15:38:37,704 [INFO] sentence_transformers.base.model: No device provided, using cpu
+2026-06-10 15:38:38,456 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/modules.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-10 15:38:38,656 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/modules.json "HTTP/1.1 200 OK"
+2026-06-10 15:38:38,970 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/config_sentence_transformers.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-10 15:38:39,171 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/config_sentence_transformers.json "HTTP/1.1 200 OK"
+2026-06-10 15:38:39,171 [INFO] sentence_transformers.base.model: Loading SentenceTransformer model from sentence-transformers/all-MiniLM-L6-v2.
+2026-06-10 15:38:39,582 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/config_sentence_transformers.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-10 15:38:39,788 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/config_sentence_transformers.json "HTTP/1.1 200 OK"
+2026-06-10 15:38:40,211 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/README.md "HTTP/1.1 307 Temporary Redirect"
+2026-06-10 15:38:40,414 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/README.md "HTTP/1.1 200 OK"
+2026-06-10 15:38:40,817 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/modules.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-10 15:38:41,019 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/modules.json "HTTP/1.1 200 OK"
+2026-06-10 15:38:41,431 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/sentence_bert_config.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-10 15:38:41,632 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/sentence_bert_config.json "HTTP/1.1 200 OK"
+2026-06-10 15:38:42,044 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/adapter_config.json "HTTP/1.1 404 Not Found"
+2026-06-10 15:38:42,452 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-10 15:38:42,665 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/config.json "HTTP/1.1 200 OK"
+Loading weights:   0%|          | 0/103 [00:00<?, ?it/s]Loading weights: 100%|##########| 103/103 [00:00<00:00, 6109.82it/s]
+2026-06-10 15:38:43,169 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/processor_config.json "HTTP/1.1 404 Not Found"
+2026-06-10 15:38:43,573 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/preprocessor_config.json "HTTP/1.1 404 Not Found"
+2026-06-10 15:38:43,987 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/video_preprocessor_config.json "HTTP/1.1 404 Not Found"
+2026-06-10 15:38:44,399 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/preprocessor_config.json "HTTP/1.1 404 Not Found"
+2026-06-10 15:38:44,719 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/tokenizer_config.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-10 15:38:44,904 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/tokenizer_config.json "HTTP/1.1 200 OK"
+2026-06-10 15:38:45,332 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-10 15:38:45,437 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/config.json "HTTP/1.1 200 OK"
+2026-06-10 15:38:45,832 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-10 15:38:46,015 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/config.json "HTTP/1.1 200 OK"
+2026-06-10 15:38:46,350 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/tokenizer_config.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-10 15:38:46,491 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/tokenizer_config.json "HTTP/1.1 200 OK"
+2026-06-10 15:38:46,856 [INFO] httpx: HTTP Request: GET https://huggingface.co/api/models/sentence-transformers/all-MiniLM-L6-v2/tree/main/additional_chat_templates?recursive=false&expand=false "HTTP/1.1 404 Not Found"
+2026-06-10 15:38:47,221 [INFO] httpx: HTTP Request: GET https://huggingface.co/api/models/sentence-transformers/all-MiniLM-L6-v2/tree/main?recursive=true&expand=false "HTTP/1.1 200 OK"
+2026-06-10 15:38:48,027 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/1_Pooling/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-10 15:38:48,212 [INFO] httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/1_Pooling%2Fconfig.json "HTTP/1.1 200 OK"
+2026-06-10 15:38:48,598 [INFO] httpx: HTTP Request: GET https://huggingface.co/api/models/sentence-transformers/all-MiniLM-L6-v2 "HTTP/1.1 200 OK"
+2026-06-10 15:38:48,598 [INFO] utils.embeddings: Embedding model loaded.
+2026-06-10 15:38:54,676 [INFO] httpx: HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-10 15:39:23,511 [INFO] httpx: HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-06-10 15:39:23,515 [INFO] groq._base_client: Retrying request to /openai/v1/chat/completions in 19.000000 seconds
+2026-06-10 15:39:46,653 [INFO] httpx: HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-10 15:40:20,961 [INFO] httpx: HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-06-10 15:40:20,961 [INFO] groq._base_client: Retrying request to /openai/v1/chat/completions in 7.000000 seconds
+2026-06-10 15:40:28,124 [INFO] httpx: HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-06-10 15:40:28,124 [INFO] groq._base_client: Retrying request to /openai/v1/chat/completions in 3.000000 seconds
+2026-06-10 15:40:34,480 [INFO] httpx: HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-10 15:40:36,833 [INFO] httpx: HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-06-10 15:40:36,833 [INFO] groq._base_client: Retrying request to /openai/v1/chat/completions in 50.000000 seconds
+2026-06-10 15:41:30,488 [INFO] httpx: HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-10 15:42:10,538 [INFO] httpx: HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-06-10 15:42:10,538 [INFO] groq._base_client: Retrying request to /openai/v1/chat/completions in 10.000000 seconds
+2026-06-10 15:42:24,349 [INFO] httpx: HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-10 18:03:32,353 [INFO] app.utils.groq_client: Whisper transcription language: en
+2026-06-10 18:03:33,463 [INFO] httpx: HTTP Request: POST https://api.groq.com/openai/v1/audio/transcriptions "HTTP/1.1 200 OK"
+2026-06-10 18:03:33,478 [INFO] app.utils.groq_client: Transcription successful: My landlord has asked me to evict even though the contract has not ended yet.
+2026-06-10 18:03:43,813 [INFO] httpx: HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-10 18:04:40,041 [WARNING] app.utils.tts: ElevenLabs TTS failed: 401 Client Error: Unauthorized for url: https://api.elevenlabs.io/v1/text-to-speech/pNInz6obpgDQGcFmaJgB
+2026-06-10 18:04:40,280 [WARNING] app.utils.tts: espeak-ng not found. Install: apt-get install espeak-ng
+2026-06-10 18:04:52,017 [INFO] app.utils.tts: gTTS TTS (en): 610 chars \u2192 C:\Users\muniz\AppData\Local\Temp\legal_aid_tts\13d3e5f45722916deef2fbbde146f629.mp3
+2026-06-10 18:05:10,022 [WARNING] app.utils.tts: ElevenLabs TTS failed: 401 Client Error: Unauthorized for url: https://api.elevenlabs.io/v1/text-to-speech/pNInz6obpgDQGcFmaJgB
+2026-06-10 18:05:10,188 [WARNING] app.utils.tts: espeak-ng not found. Install: apt-get install espeak-ng
+2026-06-10 18:05:10,188 [INFO] app.utils.tts: gTTS cache hit: C:\Users\muniz\AppData\Local\Temp\legal_aid_tts\13d3e5f45722916deef2fbbde146f629.mp3
+2026-06-10 18:06:23,580 [INFO] app.utils.chat_service: Chat: new session created — session-1781096557683-jvgzbh
+2026-06-10 18:06:25,077 [INFO] utils.rag_engine: FAISS index loaded: 10,498 vectors
+2026-06-10 18:06:27,331 [INFO] httpx: HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-10 18:09:02,295 [INFO] app.utils.document_loader: Loaded upload: filename=Legal Notice Arsalan Shaikh.docx  type=docx  size=17967 B  tmp=C:\Users\muniz\AppData\Local\Temp\tmp4lkepbmt.docx
+2026-06-10 18:09:10,447 [INFO] app.utils.text_extractor: DOCX extracted: paragraphs=19  chars=2702  lang=English  conf=0.90
+2026-06-10 18:09:10,463 [INFO] app.utils.document_classifier: Rule classification: type=Legal Notice  confidence=0.098  rules_matched=1  lang=English
+2026-06-10 18:09:10,825 [INFO] httpx: HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-10 18:09:10,836 [INFO] app.utils.document_classifier: LLM classified: type=Legal Notice  confidence=0.950
+2026-06-10 18:09:11,048 [INFO] app.utils.groq_client: doc-filter: 8 \u2192 6 chunks (type='Legal Notice' floor=0.45 off-cat=0.55 laws=4)
+2026-06-10 18:09:11,048 [INFO] app.utils.groq_client: Document analysis: 6 chunks after relevance filter (type=Legal Notice lang=English)
+2026-06-10 18:09:14,040 [INFO] httpx: HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-10 18:12:03,307 [INFO] httpx: HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-06-10 18:12:03,313 [WARNING] app.utils.groq_client: Groq rate limit hit — rotating to backup API key 2/3
+2026-06-10 18:12:07,199 [INFO] httpx: HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-10 19:33:57,639 [INFO] httpx: HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-10 19:33:58,322 [INFO] httpx: HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-06-10 19:33:58,322 [INFO] groq._base_client: Retrying request to /openai/v1/chat/completions in 46.000000 seconds
+2026-06-10 19:34:49,295 [INFO] httpx: HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-10 19:34:55,170 [WARNING] app.utils.tts: ElevenLabs TTS failed: 401 Client Error: Unauthorized for url: https://api.elevenlabs.io/v1/text-to-speech/pNInz6obpgDQGcFmaJgB
+2026-06-10 19:34:55,291 [WARNING] app.utils.tts: espeak-ng not found. Install: apt-get install espeak-ng
+2026-06-10 19:35:04,611 [INFO] app.utils.tts: gTTS TTS (ur): 569 chars \u2192 C:\Users\muniz\AppData\Local\Temp\legal_aid_tts\af3546f2db1f0d825dd838fe5338013a.mp3
+2026-06-10 19:35:17,246 [WARNING] app.utils.tts: ElevenLabs TTS failed: 401 Client Error: Unauthorized for url: https://api.elevenlabs.io/v1/text-to-speech/pNInz6obpgDQGcFmaJgB
+2026-06-10 19:35:17,361 [WARNING] app.utils.tts: espeak-ng not found. Install: apt-get install espeak-ng
+2026-06-10 19:35:17,361 [INFO] app.utils.tts: gTTS cache hit: C:\Users\muniz\AppData\Local\Temp\legal_aid_tts\af3546f2db1f0d825dd838fe5338013a.mp3
+2026-06-10 19:35:28,920 [WARNING] app.utils.tts: ElevenLabs TTS failed: 401 Client Error: Unauthorized for url: https://api.elevenlabs.io/v1/text-to-speech/pNInz6obpgDQGcFmaJgB
+2026-06-10 19:35:29,040 [WARNING] app.utils.tts: espeak-ng not found. Install: apt-get install espeak-ng
+2026-06-10 19:35:29,040 [INFO] app.utils.tts: gTTS cache hit: C:\Users\muniz\AppData\Local\Temp\legal_aid_tts\af3546f2db1f0d825dd838fe5338013a.mp3
+2026-06-10 19:45:14,789 [INFO] httpx: HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-10 19:45:28,983 [WARNING] app.utils.tts: ElevenLabs TTS failed: 401 Client Error: Unauthorized for url: https://api.elevenlabs.io/v1/text-to-speech/pNInz6obpgDQGcFmaJgB
+2026-06-10 19:45:29,061 [WARNING] app.utils.tts: espeak-ng not found. Install: apt-get install espeak-ng
+2026-06-10 19:45:38,690 [INFO] app.utils.tts: gTTS TTS (ur): 291 chars \u2192 C:\Users\muniz\AppData\Local\Temp\legal_aid_tts\734411d78c0c944d18010137caa9e087.mp3
+2026-06-10 20:29:20,120 [INFO] httpx: HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-11 08:10:27,999 [INFO] httpx: HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-11 12:26:36,975 [INFO] app.utils.groq_client: Whisper transcription language: en
+2026-06-11 12:26:37,788 [INFO] httpx: HTTP Request: POST https://api.groq.com/openai/v1/audio/transcriptions "HTTP/1.1 200 OK"
+2026-06-11 12:26:37,788 [INFO] app.utils.groq_client: Transcription successful: My landlord is trying to evict me from the house although the contract has not yet ended.
+2026-06-11 12:26:45,254 [INFO] httpx: HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-11 12:27:10,261 [WARNING] app.utils.tts: ElevenLabs TTS failed: 401 Client Error: Unauthorized for url: https://api.elevenlabs.io/v1/text-to-speech/pNInz6obpgDQGcFmaJgB
+2026-06-11 12:27:10,328 [WARNING] app.utils.tts: espeak-ng not found. Install: apt-get install espeak-ng
+2026-06-11 12:27:17,517 [INFO] app.utils.tts: gTTS TTS (en): 552 chars \u2192 C:\Users\muniz\AppData\Local\Temp\legal_aid_tts\14acbfc0b185c110b41790eabd931de1.mp3
+2026-06-11 12:28:21,882 [INFO] app.utils.groq_client: Whisper transcription language: ur
+2026-06-11 12:28:22,426 [INFO] httpx: HTTP Request: POST https://api.groq.com/openai/v1/audio/transcriptions "HTTP/1.1 200 OK"
+2026-06-11 12:28:22,428 [INFO] app.utils.groq_client: Transcription successful: \u0645\u06cc\u06ba \u0627\u06cc\u06a9 \u06a9\u0645\u067e\u0646\u06cc \u0645\u06cc\u06ba \u06a9\u0627\u0645 \u06a9\u0631\u062a\u06cc \u06c1\u0648\u06ba \u0627\u0648\u0631 \u0627\u0646\u06c1\u0648\u06ba \u0646\u06d2 \u0645\u062c\u06be\u06d2 \u062a\u06cc\u0646 \u0645\u06c1\u06cc\u0646\u06d2 \u0633\u06d2 \u062a\u0646\u062e\u0648\u0627\u06c1 \u0646\u06c1\u06cc\u06ba \u062f\u06cc \u0645\u06cc\u0631\u06cc \u0627\u0633 \u0645\u06cc\u06ba \u0631\u06c1\u0646\u0645\u0627\u0626\u06cc \u0641\u0631\u0645
+2026-06-11 12:28:32,154 [INFO] httpx: HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-11 12:28:53,970 [INFO] httpx: HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-06-11 12:28:53,970 [INFO] groq._base_client: Retrying request to /openai/v1/chat/completions in 10.000000 seconds
+2026-06-11 12:29:07,584 [INFO] httpx: HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-11 12:29:13,940 [WARNING] app.utils.tts: ElevenLabs TTS failed: 401 Client Error: Unauthorized for url: https://api.elevenlabs.io/v1/text-to-speech/pNInz6obpgDQGcFmaJgB
+2026-06-11 12:29:13,974 [WARNING] app.utils.tts: espeak-ng not found. Install: apt-get install espeak-ng
+2026-06-11 12:29:19,541 [INFO] app.utils.tts: gTTS TTS (ur): 354 chars \u2192 C:\Users\muniz\AppData\Local\Temp\legal_aid_tts\853ae484ffd2ae74b29dd597d0ba2e48.mp3
+2026-06-11 12:30:50,198 [INFO] httpx: HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-11 12:31:12,299 [INFO] app.utils.chat_service: Chat: pruned 1 expired sessions
+2026-06-11 12:31:12,301 [INFO] app.utils.chat_service: Chat: new session created — session-1781163036550-5rqy2p
+2026-06-11 12:31:15,184 [INFO] httpx: HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-11 12:33:16,576 [INFO] app.utils.document_loader: Loaded upload: filename=Divorce Deed Asjad.docx  type=docx  size=17712 B  tmp=C:\Users\muniz\AppData\Local\Temp\tmpzpy5etwt.docx
+2026-06-11 12:33:16,818 [INFO] app.utils.text_extractor: DOCX extracted: paragraphs=34  chars=2836  lang=English  conf=0.89
+2026-06-11 12:33:16,835 [INFO] app.utils.document_classifier: Rule classification: type=Unknown  confidence=0.000  rules_matched=0  lang=English
+2026-06-11 12:33:17,333 [INFO] httpx: HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-11 12:33:17,335 [INFO] app.utils.document_classifier: LLM classified: type=Unknown  confidence=0.950
+2026-06-11 12:33:17,584 [INFO] app.utils.groq_client: doc-filter: 8 \u2192 7 chunks (type='Unknown' floor=0.45 off-cat=0.55 laws=5)
+2026-06-11 12:33:17,584 [INFO] app.utils.groq_client: Document analysis: 7 chunks after relevance filter (type=Unknown lang=English)
+2026-06-11 12:33:20,831 [INFO] httpx: HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"

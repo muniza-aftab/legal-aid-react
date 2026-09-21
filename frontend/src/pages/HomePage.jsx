@@ -1,6 +1,6 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Mic, Trash2, Download, Search, Upload, Volume2, ChevronDown, ChevronUp, Scale } from 'lucide-react'
+import { Mic, Trash2, Download, Search, Upload, Volume2, VolumeX, ChevronDown, ChevronUp, Scale } from 'lucide-react'
 import { useAppStore } from '@/services/store'
 import { useT, isRTL, translateCategory } from '@/services/i18n'
 import { analyzeCase, downloadPDF, transcribeAudio, generateTTS } from '@/services/api'
@@ -33,12 +33,21 @@ export default function HomePage() {
   const [activeTab, setActiveTab] = useState('laws')
   const [showNGOs, setShowNGOs] = useState(false)
   const [ttsTarget, setTtsTarget] = useState(null)   // null | 'summary' | 'laws' | 'rights' | 'steps'
+  const [ttsState, setTtsState] = useState('idle')   // 'idle' | 'loading' | 'playing' | 'paused'
   const [recording, setRecording] = useState(false)
   const [recordLoading, setRecordLoading] = useState(false)
   const [recordError, setRecordError] = useState('')
   const fileRef = useRef()
   const mediaRecorderRef = useRef(null)
   const audioChunksRef = useRef([])
+  const audioRef = useRef(null)
+
+  useEffect(() => {
+    return () => {
+      audioRef.current?.pause()
+      audioRef.current = null
+    }
+  }, [])
 
   const handleAnalyze = async () => {
     if (!query.trim() || query.length < 15) {
@@ -134,16 +143,31 @@ export default function HomePage() {
   }
 
   const handleTTS = async (text, target = 'summary') => {
+    if (ttsTarget === target) {
+      if (ttsState === 'playing') {
+        audioRef.current?.pause()
+      } else if (ttsState === 'paused') {
+        audioRef.current?.play()
+      }
+      return
+    }
     if (!text?.trim() || ttsTarget) return
     setTtsTarget(target)
+    setTtsState('loading')
     try {
       const blob = await generateTTS(text, language)
       const url = URL.createObjectURL(blob)
       const audio = new Audio(url)
+      audioRef.current = audio
+      audio.onplay  = () => setTtsState('playing')
+      audio.onpause = () => { if (!audio.ended) setTtsState('paused') }
+      audio.onended = () => { URL.revokeObjectURL(url); audioRef.current = null; setTtsTarget(null); setTtsState('idle') }
+      audio.onerror = () => { URL.revokeObjectURL(url); audioRef.current = null; setTtsTarget(null); setTtsState('idle') }
       audio.play()
-      audio.onended = () => URL.revokeObjectURL(url)
-    } catch {}
-    setTtsTarget(null)
+    } catch {
+      setTtsTarget(null)
+      setTtsState('idle')
+    }
   }
 
   const res = analysisResult
@@ -421,14 +445,22 @@ export default function HomePage() {
                     <div className="label">{t('summary_label')}</div>
                     <button
                       onClick={() => handleTTS(res.summary, 'summary')}
-                      disabled={!!ttsTarget}
+                      disabled={!!ttsTarget && ttsTarget !== 'summary'}
                       className="flex items-center gap-1.5 text-xs rounded-lg px-2.5 py-1 transition-all"
                       style={{
-                        color: ttsTarget === 'summary' ? '#a78bfa' : 'var(--text-muted)',
-                        background: ttsTarget === 'summary' ? 'rgba(124,58,237,0.10)' : 'transparent',
+                        color: ttsTarget === 'summary' && ttsState === 'playing' ? '#f87171' : ttsTarget === 'summary' ? '#a78bfa' : 'var(--text-muted)',
+                        background: ttsTarget === 'summary' && ttsState === 'playing' ? 'rgba(239,68,68,0.10)' : ttsTarget === 'summary' ? 'rgba(124,58,237,0.10)' : 'transparent',
                       }}
                     >
-                      <Volume2 size={13} /> {ttsTarget === 'summary' ? t('loading_tts') : t('listen_btn')}
+                      {ttsTarget === 'summary' && ttsState === 'playing' ? (
+                        <motion.span className="flex items-center gap-1.5" animate={{ opacity: [1, 0.5, 1] }} transition={{ duration: 1.2, repeat: Infinity }}>
+                          <VolumeX size={13} /> {t('stop_btn')}
+                        </motion.span>
+                      ) : ttsTarget === 'summary' && ttsState === 'loading' ? (
+                        <><Spinner size={13} /> {t('loading_tts')}</>
+                      ) : (
+                        <><Volume2 size={13} /> {t('listen_btn')}</>
+                      )}
                     </button>
                   </div>
                   <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)', direction: rtl ? 'rtl' : 'ltr' }}>
@@ -461,20 +493,29 @@ export default function HomePage() {
                         steps:  res.next_steps?.join(language === 'Urdu' ? '۔ ' : '. '),
                       }[activeTab] || ''
                       const isActive = ttsTarget === activeTab
+                      const isPlaying = isActive && ttsState === 'playing'
+                      const isLoading = isActive && ttsState === 'loading'
                       return (
                         <button
                           onClick={() => handleTTS(tabText, activeTab)}
-                          disabled={!!ttsTarget || !tabText}
+                          disabled={!isActive && (!!ttsTarget || !tabText)}
                           className="ml-auto flex items-center gap-1.5 text-xs rounded-lg px-2.5 py-1.5 flex-shrink-0 transition-all"
                           style={{
-                            color: isActive ? '#a78bfa' : 'var(--text-muted)',
-                            background: isActive ? 'rgba(124,58,237,0.10)' : 'transparent',
-                            border: isActive ? '1px solid rgba(124,58,237,0.20)' : '1px solid transparent',
+                            color: isPlaying ? '#f87171' : isActive ? '#a78bfa' : 'var(--text-muted)',
+                            background: isPlaying ? 'rgba(239,68,68,0.10)' : isActive ? 'rgba(124,58,237,0.10)' : 'transparent',
+                            border: isPlaying ? '1px solid rgba(239,68,68,0.25)' : isActive ? '1px solid rgba(124,58,237,0.20)' : '1px solid transparent',
                           }}
-                          title={t('listen_btn')}
+                          title={isPlaying ? t('stop_btn') : t('listen_btn')}
                         >
-                          <Volume2 size={12} />
-                          {isActive ? t('loading_tts') : t('listen_btn')}
+                          {isPlaying ? (
+                            <motion.span className="flex items-center gap-1.5" animate={{ opacity: [1, 0.5, 1] }} transition={{ duration: 1.2, repeat: Infinity }}>
+                              <VolumeX size={12} /> {t('stop_btn')}
+                            </motion.span>
+                          ) : isLoading ? (
+                            <><Spinner size={12} /> {t('loading_tts')}</>
+                          ) : (
+                            <><Volume2 size={12} /> {t('listen_btn')}</>
+                          )}
                         </button>
                       )
                     })()}

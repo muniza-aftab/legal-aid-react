@@ -1,10 +1,10 @@
 import { useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Scale, MessageSquare, FileText, AlertTriangle, Info,
   LayoutDashboard, BarChart3, Building2, Users, Menu, X,
-  ChevronRight, Settings, Globe, MapPin, LogOut, Sun, Moon, FileSearch,
+  ChevronRight, Globe, MapPin, Sun, Moon, FileSearch,
 } from 'lucide-react'
 import { useAppStore } from '@/services/store'
 import { useT, isRTL } from '@/services/i18n'
@@ -23,7 +23,6 @@ const NAV = [
   { href: '/ngos',              icon: Building2,       key: 'nav_ngos',              group: 'directory' },
   { href: '/emergency',         icon: AlertTriangle,   key: 'nav_emergency',         group: 'support'   },
   { href: '/about',             icon: Info,            key: 'nav_about',             group: 'support'   },
-  { href: '/admin',             icon: Settings,        key: 'nav_admin',             group: 'system'    },
 ]
 
 const SECTIONS = [
@@ -31,22 +30,18 @@ const SECTIONS = [
   { label: 'Tools',     group: 'tools'     },
   { label: 'Directory', group: 'directory' },
   { label: 'Support',   group: 'support'   },
-  { label: 'System',    group: 'system'    },
 ]
 
 export default function AppLayout({ children }) {
   const location = useLocation()
-  const navigate = useNavigate()
   const t = useT()
-  const { language, city, sidebarOpen, toggleSidebar, adminAuthenticated, clearAdminAuth, theme, toggleTheme, toggleAiDrawer } = useAppStore()
+  const { language, city, sidebarOpen, toggleSidebar, theme, toggleTheme, toggleAiDrawer } = useAppStore()
 
   const handleNavAction = (action) => {
     if (action === 'openAiDrawer') toggleAiDrawer()
   }
   const rtl = isRTL(language)
   const isDark = theme === 'dark'
-  const isAdminRoute = location.pathname.startsWith('/admin')
-
 
   return (
     // Outer shell is always LTR — sidebar must never mirror to the right
@@ -108,17 +103,6 @@ export default function AppLayout({ children }) {
             <div className="px-3 pb-3 pt-5 space-y-2">
               <LanguageSelector compact />
               <CitySelector compact />
-              {adminAuthenticated && (
-                <button
-                  onClick={() => { clearAdminAuth(); navigate('/home') }}
-                  className="flex items-center gap-2 w-full px-3 py-2 rounded-xl text-xs transition-colors"
-                  style={{ color: '#f87171' }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.10)'}
-                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                >
-                  <LogOut size={13} /> Logout Admin
-                </button>
-              )}
               <div className="px-2 pt-2 text-[9px] leading-relaxed" style={{ color: isDark ? 'rgba(255,255,255,0.14)' : 'rgba(15,23,42,0.28)' }}>
                 🔒 Private · No data stored · Free to use
               </div>
@@ -129,7 +113,7 @@ export default function AppLayout({ children }) {
 
       {/* ── AI Assistant Drawer + Floating Button ── */}
       <AIAssistantDrawer />
-      {!location.pathname.startsWith('/admin') && <FloatingAIButton />}
+      <FloatingAIButton />
 
       {/* ── Main Content ── always pushed right of the left sidebar */}
       <div
@@ -171,10 +155,6 @@ export default function AppLayout({ children }) {
 
           {/* Right side */}
           <div className="ml-auto flex items-center gap-2">
-            {adminAuthenticated && (
-              <span className="badge badge-success text-[10px]">Admin</span>
-            )}
-
             {/* Language + city pills */}
             <span
               className="text-[11px] font-mono px-2 py-1 rounded-lg"
@@ -239,7 +219,7 @@ export default function AppLayout({ children }) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.22 }}
             className="h-full"
-            dir={rtl && !isAdminRoute ? 'rtl' : 'ltr'}
+            dir={rtl ? 'rtl' : 'ltr'}
           >
             {children}
           </motion.div>
@@ -293,7 +273,7 @@ function Breadcrumb({ pathname, t, isDark }) {
 
   const label = {
     chat: t('nav_chat'), apply: t('nav_apply'), emergency: t('nav_emergency'),
-    about: t('nav_about'), admin: t('nav_admin'), analytics: t('nav_analytics'),
+    about: t('nav_about'), analytics: t('nav_analytics'),
     ngos: t('nav_ngos'), lawyers: t('nav_lawyers'),
     'document-analysis': t('nav_document_analysis'),
   }[segments[0]] || segments[0]

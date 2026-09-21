@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Lock, CheckCircle } from 'lucide-react'
+import { CheckCircle } from 'lucide-react'
 import { useAppStore } from '@/services/store'
 import ScalesIcon from '@/components/ui/ScalesIcon'
 
@@ -308,7 +308,7 @@ export default function LanguagePicker() {
                     backgroundClip: 'text',
                   }}
                 >
-                  AI Legal Aid
+                  Legal Aid AI
                 </span>
               </motion.h1>
 
@@ -376,24 +376,6 @@ export default function LanguagePicker() {
                 />
               </div>
 
-              <div className="mt-5">
-                <div className="mb-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }} />
-                <div className="text-center space-y-2.5">
-                  <div
-                    className="flex flex-wrap justify-center items-center gap-3 text-xs"
-                    style={{ color: 'rgba(255,255,255,0.33)' }}
-                  >
-                    <span className="flex items-center gap-1"><Lock size={10} />No data stored</span>
-                    <span>·</span>
-                    <span>100% Free</span>
-                    <span>·</span>
-                    <span>Powered by Groq + FAISS</span>
-                  </div>
-                  <p className="text-xs" style={{ color: 'rgba(255,255,255,0.24)' }}>
-                    You can change your language anytime from the sidebar settings.
-                  </p>
-                </div>
-              </div>
             </motion.div>
           </motion.div>
         )}

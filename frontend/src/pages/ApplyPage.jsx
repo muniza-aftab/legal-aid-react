@@ -32,15 +32,24 @@ const CITIES  = ['Karachi', 'Lahore', 'Islamabad', 'Rawalpindi', 'Peshawar', 'Qu
 
 export default function ApplyPage() {
   const t = useT()
-  const { language } = useAppStore()
+  const { language, analysisResult } = useAppStore()
   const rtl = isRTL(language)
   const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(null)
   const [serverError, setServerError] = useState('')
 
+  // If an AI analysis was already run on the Home page, use it to pre-fill
+  // the case type, urgency and description — the user can still edit all of them freely.
+  const autoCategory = CASE_TYPES.includes(analysisResult?.category) ? analysisResult.category : ''
+  const autoUrgency  = URGENCY.includes(analysisResult?.risk_level) ? analysisResult.risk_level : ''
+
   const { register, handleSubmit, watch, formState: { errors }, reset } = useForm({
     resolver: zodResolver(schema),
-    defaultValues: { urgency: '' },
+    defaultValues: {
+      urgency: autoUrgency,
+      case_type: autoCategory,
+      description: analysisResult?.summary || '',
+    },
   })
 
   const selectedUrgency = watch('urgency')
@@ -148,6 +157,11 @@ export default function ApplyPage() {
                 {CASE_TYPES.map(c => <option key={c} value={c}>{translateCategory(c, language)}</option>)}
               </select>
               {errors.case_type && <FieldError msg={errors.case_type.message} />}
+              {autoCategory && (
+                <p className="mt-1.5 text-xs" style={{ color: 'var(--text-muted)' }}>
+                  🤖 {t('apply_autodetected')}
+                </p>
+              )}
             </div>
           </div>
 
@@ -202,6 +216,11 @@ export default function ApplyPage() {
               })}
             </div>
             {errors.urgency && <FieldError msg={errors.urgency.message} />}
+            {autoUrgency && (
+              <p className="mt-1.5 text-xs" style={{ color: 'var(--text-muted)' }}>
+                🤖 {t('apply_autodetected')}
+              </p>
+            )}
           </div>
 
           {/* Description */}

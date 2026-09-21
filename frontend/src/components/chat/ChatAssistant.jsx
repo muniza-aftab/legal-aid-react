@@ -231,8 +231,10 @@ function ChatMessage({ msg, rtl, language, t }) {
   const handleListen = async () => {
     if (ttsState === 'playing') {
       audioRef.current?.pause()
-      audioRef.current = null
-      setTtsState('idle')
+      return
+    }
+    if (ttsState === 'paused') {
+      audioRef.current?.play()
       return
     }
     if (ttsState === 'loading') return
@@ -244,6 +246,7 @@ function ChatMessage({ msg, rtl, language, t }) {
       const audio = new Audio(url)
       audioRef.current = audio
       audio.onplay  = () => setTtsState('playing')
+      audio.onpause = () => { if (!audio.ended) setTtsState('paused') }
       audio.onended = () => { URL.revokeObjectURL(url); audioRef.current = null; setTtsState('idle') }
       audio.onerror = () => { URL.revokeObjectURL(url); audioRef.current = null; setTtsState('idle') }
       audio.play()
@@ -314,14 +317,14 @@ function ChatMessage({ msg, rtl, language, t }) {
                 border:     ttsState === 'playing' ? '1px solid rgba(239,68,68,0.25)' : '1px solid rgba(255,255,255,0.08)',
               }}
               onMouseEnter={e => {
-                if (ttsState === 'idle') {
+                if (ttsState === 'idle' || ttsState === 'paused') {
                   e.currentTarget.style.background = 'rgba(255,255,255,0.08)'
                   e.currentTarget.style.color = 'var(--text-secondary)'
                   e.currentTarget.style.borderColor = 'rgba(255,255,255,0.14)'
                 }
               }}
               onMouseLeave={e => {
-                if (ttsState === 'idle') {
+                if (ttsState === 'idle' || ttsState === 'paused') {
                   e.currentTarget.style.background = 'rgba(255,255,255,0.04)'
                   e.currentTarget.style.color = 'var(--text-muted)'
                   e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'

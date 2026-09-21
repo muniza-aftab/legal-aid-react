@@ -68,6 +68,9 @@ export default function App() {
         {/* Landing page — always shown at root */}
         <Route path="/" element={<LanguagePicker />} />
 
+        {/* Admin portal — separate URL, outside the user-facing sidebar layout */}
+        <Route path="/admin-portal/*" element={<AdminPage />} />
+
         {/* App — inside sidebar layout */}
         <Route element={<AppShell />}>
           <Route path="/home"      element={<HomePage />} />
@@ -75,8 +78,7 @@ export default function App() {
           <Route path="/apply"     element={<ApplyPage />} />
           <Route path="/emergency" element={<EmergencyPage />} />
           <Route path="/about"     element={<AboutPage />} />
-          <Route path="/admin/*"   element={<AdminPage />} />
-          <Route path="/analytics" element={<Navigate to="/admin/analytics" replace />} />
+          <Route path="/analytics" element={<Navigate to="/admin-portal/analytics" replace />} />
           <Route path="/ngos"                element={<NGOPage />} />
           <Route path="/lawyers"             element={<LawyersPage />} />
           <Route path="/document-analysis"   element={<DocumentAnalysisPage />} />
