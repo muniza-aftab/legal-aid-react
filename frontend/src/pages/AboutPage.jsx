@@ -63,7 +63,7 @@ export default function AboutPage() {
             {[
               ['Frontend', 'React + Vite + TailwindCSS'],
               ['Backend', 'FastAPI + Python'],
-              ['AI/LLM', 'Groq (Llama 3.3 70B + Whisper)'],
+              ['AI/LLM', 'Groq (gpt-oss + Whisper)'],
               ['RAG', 'FAISS + Sentence Transformers'],
               ['Database', 'SQLite'],
               ['TTS', 'ElevenLabs / gTTS'],

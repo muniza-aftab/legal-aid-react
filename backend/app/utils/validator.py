@@ -3,7 +3,7 @@ validator.py — Input sanitisation and prompt injection guard.
 """
 from __future__ import annotations
 import re
-from utils.config import MAX_QUERY_LENGTH, MIN_QUERY_LENGTH, INJECTION_PATTERNS
+from app.utils.config import MAX_QUERY_LENGTH, MIN_QUERY_LENGTH, INJECTION_PATTERNS
 
 
 class ValidationError(ValueError):

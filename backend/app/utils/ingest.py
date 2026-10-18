@@ -21,12 +21,12 @@ import hashlib
 import logging
 from pathlib import Path
 
-from utils.config import (
+from app.utils.config import (
     LAWS_DIR, CHUNKS_FILE,
     FOLDER_CATEGORY_MAP, FILENAME_CATEGORY_MAP,
     CHUNK_SIZE, CHUNK_OVERLAP,
 )
-from utils.parser import extract_pdf, ParsedDocument
+from app.utils.parser import extract_pdf, ParsedDocument
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 logger = logging.getLogger(__name__)

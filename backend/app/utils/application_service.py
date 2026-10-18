@@ -28,7 +28,8 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-from utils.config import DB_PATH
+from app.utils.config import DB_PATH
+from app.utils.db import get_connection
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +47,7 @@ _URGENCY_PRIORITY: dict[str, int] = {
     "Low":      1,
 }
 
-from utils.legal_taxonomy import (
+from app.utils.legal_taxonomy import (
     LEGAL_CASE_TYPES,
     NGO_CATEGORIES,
     LAWYER_EXPERTISE_AREAS,
@@ -59,9 +60,15 @@ CASE_TYPES = LEGAL_CASE_TYPES
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _conn() -> sqlite3.Connection:
-    c = sqlite3.connect(DB_PATH, check_same_thread=False)
-    c.row_factory = sqlite3.Row
-    return c
+    return get_connection()
+
+
+def _sync_workload(conn, *lawyer_ids: str) -> None:
+    for lawyer_id in set(lawyer_ids) - {"", None}:
+        conn.execute("""UPDATE lawyers SET active_cases = (
+            SELECT COUNT(*) FROM applications WHERE assigned_lawyer_id = ?
+            AND status NOT IN ('resolved', 'closed')) WHERE lawyer_id = ?""",
+            (lawyer_id, lawyer_id))
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -108,6 +115,8 @@ def init_applications_table() -> None:
         for col, defn in [
             ("assigned_ngo_id",    "TEXT DEFAULT ''"),
             ("assigned_lawyer_id", "TEXT DEFAULT ''"),
+            ("cnic", "TEXT DEFAULT ''"),
+            ("consent_at", "TEXT DEFAULT ''"),
         ]:
             if col not in existing:
                 c.execute(f"ALTER TABLE applications ADD COLUMN {col} {defn}")
@@ -124,7 +133,7 @@ def _route_ngo_db(case_type: str, city: str = "") -> tuple:
     Returns (ngo_name, ngo_id). Both empty strings on miss.
     """
     try:
-        from utils.ngo_service import get_ngos_for_category
+        from app.utils.ngo_service import get_ngos_for_category
         ngo_category = case_type
         candidates   = get_ngos_for_category(ngo_category, city=city)
         if candidates:
@@ -157,7 +166,7 @@ def _find_lawyer_db(
         -   active_cases (workload penalty)
     """
     try:
-        from utils.lawyer_service import find_best_lawyer
+        from app.utils.lawyer_service import find_best_lawyer
         expertise_main = case_type
         best = find_best_lawyer(
             expertise_main=expertise_main,
@@ -249,7 +258,7 @@ def submit_application(data: dict) -> dict:
     city = data.get("city", "").strip()
 
     # Deterministic routing via routing_service
-    from utils.routing_service import route_case
+    from app.utils.routing_service import route_case
     routing   = route_case(city, case_type, urgency)
     ngo       = routing["ngo"]
     lawyer    = routing["lawyer"]
@@ -263,7 +272,7 @@ def submit_application(data: dict) -> dict:
     lawyer_id      = lawyer["lawyer_id"] if lawyer else ""
     routing_note   = routing["reason"]
 
-    app_id    = f"APP-{uuid.uuid4().hex[:8].upper()}"
+    app_id    = f"APP-{uuid.uuid4().hex[:16].upper()}"
     timestamp = datetime.utcnow().isoformat(sep=" ", timespec="seconds")
     priority  = _URGENCY_PRIORITY[urgency]
 
@@ -273,6 +282,8 @@ def submit_application(data: dict) -> dict:
         "name":               data["name"].strip(),
         "contact":            data["contact"].strip(),
         "email":              data.get("email", "").strip(),
+        "cnic":               data.get("cnic", "").strip(),
+        "consent_at":         timestamp if data.get("consent") else "",
         "city":               city,
         "case_type":          case_type,
         "urgency":            urgency,
@@ -296,22 +307,15 @@ def submit_application(data: dict) -> dict:
                (application_id, timestamp, name, contact, email, city,
                 case_type, urgency, priority, description,
                 status, assigned_ngo, assigned_ngo_id,
-                suggested_lawyer, assigned_lawyer_id, notes)
+                suggested_lawyer, assigned_lawyer_id, notes, cnic, consent_at)
                VALUES
                (:application_id, :timestamp, :name, :contact, :email, :city,
                 :case_type, :urgency, :priority, :description,
                 :status, :assigned_ngo, :assigned_ngo_id,
-                :suggested_lawyer, :assigned_lawyer_id, :notes)""",
+                :suggested_lawyer, :assigned_lawyer_id, :notes, :cnic, :consent_at)""",
             application,
         )
-
-    # Increment lawyer workload counter (non-critical — ignore failures)
-    if lawyer_id:
-        try:
-            from utils.lawyer_service import increment_cases
-            increment_cases(lawyer_id)
-        except Exception:
-            pass
+        _sync_workload(c, lawyer_id)
 
     return application
 
@@ -327,16 +331,24 @@ def assign_lawyer(app_id: str, lawyer_id: str) -> bool:
     increments that lawyer's active_cases counter.
     Raises ValueError if lawyer_id not found.
     """
-    from utils.lawyer_service import get_lawyer, increment_cases
+    from app.utils.lawyer_service import get_lawyer, increment_cases
 
     lawyer = get_lawyer(lawyer_id)
     if not lawyer:
         raise ValueError(f"Lawyer '{lawyer_id}' not found.")
+    if not lawyer.get("available"):
+        raise ValueError("This lawyer is currently unavailable.")
 
     display = f"{lawyer['full_name']} ({lawyer['bar_license']}, {lawyer['city']})"
     note    = f"Manually assigned by admin: {lawyer['full_name']}"
 
     with _conn() as c:
+        c.execute("BEGIN IMMEDIATE")
+        previous = c.execute("SELECT assigned_lawyer_id, status FROM applications WHERE application_id=?", (app_id,)).fetchone()
+        if not previous:
+            return False
+        if previous["status"] in {"resolved", "closed"}:
+            raise ValueError("Reopen the case before assigning a lawyer.")
         cur = c.execute(
             """UPDATE applications
                SET suggested_lawyer   = ?,
@@ -346,14 +358,8 @@ def assign_lawyer(app_id: str, lawyer_id: str) -> bool:
                WHERE application_id = ?""",
             (display, lawyer_id, note, app_id),
         )
-
-    if cur.rowcount > 0:
-        try:
-            increment_cases(lawyer_id)
-        except Exception:
-            pass
-        return True
-    return False
+        _sync_workload(c, previous["assigned_lawyer_id"], lawyer_id)
+        return cur.rowcount > 0
 
 
 def assign_ngo(app_id: str, ngo_id: str) -> bool:
@@ -361,11 +367,13 @@ def assign_ngo(app_id: str, ngo_id: str) -> bool:
     Admin override: assign a specific DB NGO to an application.
     Raises ValueError if ngo_id not found.
     """
-    from utils.ngo_service import get_ngo
+    from app.utils.ngo_service import get_ngo
 
     ngo = get_ngo(ngo_id)
     if not ngo:
         raise ValueError(f"NGO '{ngo_id}' not found.")
+    if not ngo.get("active"):
+        raise ValueError("This NGO is inactive.")
 
     with _conn() as c:
         cur = c.execute(
@@ -469,15 +477,19 @@ def get_application(app_id: str) -> Optional[dict]:
     return dict(row) if row else None
 
 
-def update_status(app_id: str, status: str, notes: str = "") -> bool:
+def update_status(app_id: str, status: str, notes: Optional[str] = None) -> bool:
     valid = {"pending", "in_review", "assigned", "resolved", "closed"}
     if status not in valid:
         raise ValueError(f"Invalid status '{status}'. Must be one of {sorted(valid)}")
     with _conn() as c:
+        c.execute("BEGIN IMMEDIATE")
+        previous = c.execute("SELECT assigned_lawyer_id FROM applications WHERE application_id=?", (app_id,)).fetchone()
         cur = c.execute(
-            "UPDATE applications SET status=?, notes=? WHERE application_id=?",
+            "UPDATE applications SET status=?, notes=COALESCE(?, notes) WHERE application_id=?",
             (status, notes, app_id),
         )
+        if previous:
+            _sync_workload(c, previous["assigned_lawyer_id"])
     return cur.rowcount > 0
 
 
@@ -491,7 +503,10 @@ def reroute_application(app_id: str) -> dict:
     if not app:
         raise ValueError(f"Application '{app_id}' not found.")
 
-    from utils.routing_service import route_case
+    if app["status"] in {"resolved", "closed"}:
+        raise ValueError("Reopen the case before rerouting it.")
+
+    from app.utils.routing_service import route_case
     routing = route_case(app["city"], app["case_type"], app["urgency"])
 
     ngo    = routing["ngo"]
@@ -523,13 +538,7 @@ def reroute_application(app_id: str) -> dict:
             (ngo_name, ngo_id, lawyer_display, lawyer_id,
              routing["reason"], new_status, app_id),
         )
-
-    if lawyer_id and lawyer_id != app.get("assigned_lawyer_id", ""):
-        try:
-            from utils.lawyer_service import increment_cases
-            increment_cases(lawyer_id)
-        except Exception:
-            pass
+        _sync_workload(c, app.get("assigned_lawyer_id", ""), lawyer_id)
 
     return {**routing, "application_id": app_id, "status": new_status}
 

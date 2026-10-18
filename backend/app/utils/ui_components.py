@@ -16,7 +16,7 @@ Theme system:
 """
 from __future__ import annotations
 import re
-from utils.config import RISK_COLORS
+from app.utils.config import RISK_COLORS
 
 # ── Global CSS ─────────────────────────────────────────────────────────────────
 GLOBAL_CSS = """
@@ -499,7 +499,7 @@ def section_label(text: str) -> str:
 
 def risk_card(level: str, reason: str, confidence: str = "",
               language: str = "English") -> str:
-    from utils.translations import T
+    from app.utils.translations import T
     t = T(language)
     cfg = RISK_COLORS.get(level, RISK_COLORS["Medium"])
     conf_html = (f'<span style="font-size:0.8rem;opacity:0.75;margin-left:8px;">'
@@ -513,7 +513,7 @@ def risk_card(level: str, reason: str, confidence: str = "",
 
 
 def summary_card(text: str, category: str, language: str = "English") -> str:
-    from utils.translations import T
+    from app.utils.translations import T
     t = T(language)
     return (f'<div class="result-card" style="border-top:4px solid var(--brand-navy);'
             f'background:var(--surface-soft);">'
@@ -642,7 +642,7 @@ def grounding_warning(confidence: str, language: str = "English") -> str:
     """Show a low-confidence warning when RAG context is weak."""
     if confidence != "Low":
         return ""
-    from utils.translations import T
+    from app.utils.translations import T
     t = T(language)
     return (
         '<div style="background:#fff3cd;border:1px solid #ffc107;border-left:4px solid #ffc107;'
@@ -660,7 +660,7 @@ def sources_card(chunks: list[dict], language: str = "English") -> str:
     if not chunks:
         return ""
 
-    from utils.translations import T
+    from app.utils.translations import T
     t = T(language)
 
     rows = []

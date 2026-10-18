@@ -17,8 +17,8 @@ import numpy as np
 import faiss
 import functools  # streamlit removed
 
-from utils.config import FAISS_DIR, TOP_K_RETRIEVAL, SIMILARITY_THRESHOLD
-from utils.embeddings import encode_texts, encode_query
+from app.utils.config import FAISS_DIR, TOP_K_RETRIEVAL, SIMILARITY_THRESHOLD, FILENAME_CATEGORY_MAP
+from app.utils.embeddings import encode_texts, encode_query
 
 logger = logging.getLogger(__name__)
 
@@ -336,6 +336,18 @@ def _cached_load_index():
 
     with open(_METADATA_PATH, "r", encoding="utf-8") as f:
         metadata = json.load(f)
+
+    if index.ntotal != len(metadata):
+        raise RuntimeError("The law index and metadata are out of sync. Rebuild the index.")
+    # Normalize metadata from older indexes without changing their vectors.
+    for chunk in metadata:
+        if chunk.get("category") == "Civil Law":
+            chunk["category"] = "Civil Law / Procedure"
+        source = chunk.get("source", "").upper()
+        for keyword, category in FILENAME_CATEGORY_MAP.items():
+            if keyword in source:
+                chunk["category"] = category
+                break
 
     # Precompute per-chunk schedule flag once — cheap, ~50ms for 8k chunks.
     _annotate_schedule_flags(metadata)

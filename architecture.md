@@ -1,5 +1,7 @@
 # Architecture — Pakistan AI Legal Aid System
 
+> Historical architecture reference. The October 2026 repairs add server-validated sessions, private analytics by default, segmented document review, configurable Groq models, and Vercel SPA/API rewrites. See [VERIFICATION.md](VERIFICATION.md) and [DEPLOYMENT.md](DEPLOYMENT.md) for current behavior and operational limits. The diagrams below predate those repairs; retrieval checks reduce unsupported output but cannot guarantee legal accuracy.
+
 **Revision**: 2026-05-18  
 **Stack**: React 18 · FastAPI · Groq Llama 3.3 70B · FAISS · SQLite  
 **Languages**: English / اردو (RTL)

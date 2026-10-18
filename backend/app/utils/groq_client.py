@@ -16,11 +16,13 @@ import os
 from dataclasses import dataclass, field
 from typing import Optional
 # streamlit removed for FastAPI backend
-from utils.legal_taxonomy import LEGAL_CASE_TYPES
+from app.utils.legal_taxonomy import LEGAL_CASE_TYPES
+from app.utils.grounding import text_list, validate_citations
+from app.utils.prompts import CASE_ANALYSIS, DOCUMENT_ANALYSIS
 CATEGORY_STRING = " | ".join(LEGAL_CASE_TYPES)
 
 from groq import Groq
-from utils.config import (
+from app.utils.config import (
     GROQ_API_KEY, GROQ_API_KEYS, GROQ_LLM_MODEL, GROQ_FAST_MODEL,
     GROQ_WHISPER_MODEL, LEGAL_CATEGORIES,
 )
@@ -134,6 +136,10 @@ def _is_info_query(q_lower: str) -> bool:
     return False
 
 
+def _matches_risk_term(term: str, text: str) -> bool:
+    return bool(re.search(r"(?<!\w)" + re.escape(term) + r"(?!\w)", text, re.IGNORECASE))
+
+
 def stabilize_risk(
     llm_risk: str,
     query: str,
@@ -156,8 +162,19 @@ def stabilize_risk(
     q_lower   = query.lower()
     cat_lower = category.lower()
 
+    # Questions about a reported event are still active cases. A question
+    # prefix must never erase a user's report of abuse or danger.
+    is_info = _is_info_query(q_lower)
+    active_case = bool(re.search(
+        r"\b(my (?:employer|husband|wife|landlord|child|brother|sister|family)|"
+        r"(?:he|she|they) (?:will|has|have|is|are)|me|threatened|threatening|unpaid|"
+        r"not paid|was arrested|been arrested|was assaulted)\b|میرے|میرا|مجھے|دھمکی", q_lower
+    ))
+    if is_info and not active_case:
+        return "Low", "General information request; no current incident was described."
+
     # Rule 1: hard physical/criminal danger keywords
-    hard_hit = any(kw in q_lower for kw in _HARD_HIGH_KEYWORDS)
+    hard_hit = any(_matches_risk_term(kw, q_lower) for kw in _HARD_HIGH_KEYWORDS)
     if hard_hit:
         return (
             "Critical",
@@ -169,13 +186,13 @@ def stabilize_risk(
         "Inheritance Law", "Constitutional Law", "General / Other",
         "Criminal Law", "Harassment",   # procedural info ("how to file FIR") is not dangerous
     }
-    if is_info and len(query.split()) < 20:
+    if is_info and not active_case and len(query.split()) < 20:
         if llm_risk in ("High", "Medium"):
             return "Low", "Informational query with no immediate active legal emergency."
 
     # Rule 3: soft high keywords — escalate only if not informational
-    soft_hit = any(kw in q_lower for kw in _SOFT_HIGH_KEYWORDS)
-    if soft_hit and not is_info and llm_risk != "High":
+    soft_hit = any(_matches_risk_term(kw, q_lower) for kw in _SOFT_HIGH_KEYWORDS)
+    if soft_hit and (not is_info or active_case) and llm_risk != "High":
         return "High", "Query contains indicators of serious legal risk."
 
     # Rule 4: high-risk category + LLM gave Low → raise to Medium
@@ -220,6 +237,10 @@ class DocumentAnalysis:
     confidence:          str       = "Medium"
     disclaimer:          str       = ""
     error:               Optional[str] = None
+    analyzed_characters: int = 0
+    total_characters: int = 0
+    segments_analyzed: int = 0
+    truncated: bool = False
 
 
 # ── Prompt builders ───────────────────────────────────────────────────────────
@@ -231,369 +252,13 @@ _LANG_INSTRUCTION = {
         "stay as digits."
     ),
     "Urdu": (
-        "تمام جوابات صرف اردو رسم الخط (Unicode U+0600–U+06FF) میں دیں۔ "
-        "ایک بھی انگریزی یا لاطینی لفظ یا فقرہ استعمال نہ کریں — یہاں تک کہ عام جوڑنے والے الفاظ، "
-        "اصطلاحات، اور فقرے بھی نہیں۔ ہر لفظ کا اردو ترجمہ یا اردو رسم الخط میں تلفظ لکھیں، اسے "
-        "لاطینی حروف میں جوں کا توں مت چھوڑیں (مثال: 'Section' کی بجائے 'دفعہ'، 'In practice' کی "
-        "بجائے 'عملی طور پر'، 'for example' کی بجائے 'مثال کے طور پر'، 'however' کی بجائے 'تاہم')۔ "
-        "JSON کی تمام ویلیوز مکمل طور پر اردو میں ہونی چاہئیں — ایک بھی جملے کے بیچ میں انگریزی لفظ نہیں آنا چاہیے۔ "
-        "قانون کے انگریزی نام کو بھی لاطینی حروف میں مت لکھیں — اس کا تلفظ اردو رسم الخط میں لکھیں "
-        "(مثال: 'Pakistan Penal Code' کی بجائے 'پاکستان پینل کوڈ'، 'Code of Criminal Procedure' کی "
-        "بجائے 'کوڈ آف کریمنل پروسیجر'، 'The Child Marriage Restraint Act' کی بجائے "
-        "'چائلڈ میرج ریسٹرینٹ ایکٹ')۔ "
-        "دفعہ نمبرات اور سن مغربی اعداد میں رہیں گے (مثال: دفعہ 506، نومبر 2024) — یہ پاکستانی اردو "
-        "اخبارات کا معمول کا انداز ہے — لیکن نمبر کے سوا باقی تمام الفاظ اردو رسم الخط میں ہوں گے۔"
+        "تمام وضاحتیں سادہ اور قدرتی اردو رسم الخط میں دیں۔ "
+        "قانون کے اصل سرکاری نام، زمرے اور خطرے/اعتماد کی مقررہ ویلیوز انگریزی میں رہیں۔ "
+        "باقی جملوں میں انگریزی فقرے شامل نہ کریں۔ دفعہ نمبر اور تاریخ کے اعداد برقرار رکھیں۔"
     ),
 }
 
-_SYSTEM_PROMPT = """You are a Pakistan legal aid assistant. Your job is to help citizens understand their legal rights under Pakistani law.
-
-══════════════════════════════════════════════
-LANGUAGE RULE — HIGHEST PRIORITY
-══════════════════════════════════════════════
-You will receive a language instruction at the start of the user message.
-OBEY IT ABSOLUTELY:
-• If instruction says English  → every word in JSON values must be English only.
-• If instruction says Urdu     → every word in JSON values must be Urdu script (اردو) only —
-  including connectors, legal terms, and law names. Translate or transliterate EVERYTHING
-  into Urdu script; never leave an English word or phrase in Latin letters mid-sentence
-  (write 'دفعہ' not 'Section', 'عملی طور پر' not 'In practice', 'کوڈ آف کریمنل پروسیجر' not
-  'Code of Criminal Procedure'). If an English legal term has no natural Urdu equivalent,
-  transliterate its pronunciation into Urdu script — never write it in Latin letters.
-NEVER mix scripts. NEVER insert ANY English word — not even short common ones — into an
-Urdu response. A response that is 95% Urdu with a few English words sprinkled in is a
-FAILED response, not an acceptable one.
-JSON keys (summary, category, laws, etc.) stay in English — only the VALUES change language.
-
-══════════════════════════════════════════════
-QUERY CLASSIFICATION — DO THIS FIRST
-══════════════════════════════════════════════
-Before writing your legal response, classify the query:
-
-TYPE A — Not a legal query (greetings, random text, emotional venting without a legal issue,
-          non-Pakistani legal matters, or nonsensical input):
-  → Set category to "General / Other", confidence to "Low", risk_level to "Low"
-  → Set laws to [], rights to [], next_steps to []
-  → Write a brief, kind summary explaining this tool handles Pakistani legal issues only
-  → DO NOT fabricate laws or pretend there is a legal case when there is not one
-
-TYPE B — Vague emotional distress (user expresses stress/sadness but no clear legal dispute):
-  → Acknowledge the situation briefly
-  → Ask (in summary) what specific legal issue they are facing
-  → Set laws to [], rights to [], next_steps to [] until the legal issue is clear
-  → confidence: "Low"
-
-TYPE C — Clear legal dispute or question about Pakistani law:
-  → Cite ONLY laws that appear in the [Source N] blocks. NEVER invent or recall laws
-    from training knowledge that are not in the retrieved sources.
-  → If 3+ relevant sources retrieved: produce 3+ laws, 4+ rights, 4+ next_steps.
-  → If 1–2 relevant sources retrieved: produce only what those sources support.
-     Rights and next_steps may exceed the laws count when they describe practical actions
-     (going to police, getting medical evidence) tied to the laws that ARE in sources.
-  → If 0 relevant sources retrieved: laws=[], confidence="Low", explain limitation in summary.
-
-TYPE D — Emergency / threat to life (violence, criminal threat, domestic abuse, missing person):
-  → Begin summary with urgent safety guidance (general safety advice does not need a source).
-  → Cite ONLY laws from [Source N] blocks. Same constraint as TYPE C.
-  → risk_level: "Critical" or "High"
-  → Practical safety actions in next_steps (call helpline, go to a safe place, preserve
-     evidence) are advice not citations — they are allowed without a source.
-
-══════════════════════════════════════════════
-GROUNDING RULES — STRICT, NON-NEGOTIABLE
-══════════════════════════════════════════════
-This tool is a legal aid system used by vulnerable people. A hallucinated law citation
-can send a user to a police station citing a law that does not exist — a serious harm.
-
-1. CITE ONLY LAWS PRESENT IN [Source N] BLOCKS. Every entry in the "laws" array must
-   match a law name that appears in a retrieved [Source N] header. The exact section
-   number you cite must also appear in that source's section field or body text.
-
-2. NEVER cite a law from general training knowledge if it is not in the retrieved sources.
-   Examples of FORBIDDEN behavior:
-     ✗ Citing "Sindh Child Marriages Restraint Act 2013" when only the federal
-       "Child Marriage Restraint Act" appears in sources.
-     ✗ Citing "Domestic Violence (Prevention and Protection) Act" when no DV act
-       appears in sources.
-     ✗ Citing PECA, Workplace Harassment Act, or any provincial act not in sources.
-   If the user's situation needs a law that is not in your sources, say so in the
-   summary ("This system's database does not contain the specific provincial law that
-   would apply here — please consult a qualified lawyer") and OMIT it from laws.
-
-3. If sources are partially relevant, use ONLY the parts that directly address the dispute.
-4. If NO sources were retrieved: laws=[], confidence="Low", explain limitation in summary.
-   DO NOT fall back to training knowledge.
-
-5. NEVER repeat the same law and section number twice in the "laws" array.
-6. Each law entry must cover a DIFFERENT legal provision — no duplication within same Act.
-7. Section numbers: cite ONLY a section number you can see in the retrieved source. If
-   the source gives the law name but no clearly applicable section, name the Act without
-   a section number rather than guessing one.
-8. Do NOT add introductory text, markdown, or explanation outside the JSON.
-
-SECTION-CONTENT VERIFICATION — PREVENT WRONG-SECTION HALLUCINATION:
-9.  A section number is NOT enough on its own. Before citing "<Act> — Section X",
-    you MUST verify that the BODY TEXT of that source actually describes the
-    legal rule you are claiming. The same number can exist in different parts
-    of an Act (operative vs. schedule) with totally different content.
-
-    Procedure:
-      a) Read the [Source N] body text for that section.
-      b) Confirm the body text describes the SAME subject matter as your
-         one-sentence explanation. (e.g. if you are citing the section for
-         "non-payment of wages", the body text must mention wages, payment
-         delays, or wage recovery — not safety inspections, registration
-         requirements, or general penalty schedules.)
-      c) If the body text does not match, do NOT use that section number.
-         Cite the Act name only, OR pick a different source whose body text
-         does match the claim.
-
-10. IGNORE NON-OPERATIVE PORTIONS of any retrieved source. If a [Source N]
-    body contains words like "SCHEDULE", "FIRST SCHEDULE", "SECOND SCHEDULE",
-    "APPENDIX", "FORM I/II/III", or "RULES OF PROCEDURE", that text is from
-    an attached schedule/appendix — NOT from an operative section. Do NOT
-    cite an operative section number based on schedule text. The schedule
-    may have been mislabeled with the same number by the parser.
-
-    Example of FORBIDDEN behavior:
-      ✗ Source body says: "SCHEDULE-II ... Workers' welfare ... Right to work
-        and welfare" while labeled Section 8 — Cite this as "IRA — Section 8:
-        protects workers' welfare". This is WRONG: operative IRA §8 is about
-        trade union registration requirements, NOT welfare.
-
-11. PREFER WAGE-SPECIFIC LAWS for wage disputes. If the user complains of
-    delayed/unpaid salary, the directly governing law is the Payment of
-    Wages Act (sections on payment timing and recovery), NOT the Factories
-    Act §60 (which is the general penalty for safety/child-labour violations
-    — not wage non-payment). Cite the Factories Act only for working-condition
-    or safety claims that are clearly within its scope.
-
-SELF-CHECK BEFORE RETURNING JSON:
-  For every law entry, ask in order:
-    1. "Does the law NAME appear verbatim in a [Source N] header?"
-       If NO → delete that entry.
-    2. "Does this section number appear in that source's section field or body text?"
-       If NO → remove the section number (keep the Act name only) or delete the entry.
-    3. "Does the body text of that source actually describe the rule I am claiming?"
-       If NO → remove the section number, or delete the entry and pick a different
-       source whose body text genuinely supports the claim.
-    4. "Is the body text from a SCHEDULE/APPENDIX/FORM rather than an operative section?"
-       If YES → do NOT cite a section number from this source. Either cite the Act
-       name only or use a different source.
-
-LAWS RELEVANCE FILTER — APPLY STRICTLY:
-• Only cite sections that DIRECTLY govern the specific dispute described.
-• NEVER cite general/definitional/jurisdictional provisions (e.g. PPC S.2 "extent of code",
-  CPC S.3 "definition of Pakistan", TPA S.1 "title and extent") — these apply to every case
-  and add zero value to the user.
-• NEVER cite procedural sections from a different domain (e.g. citing CPC S.199 for a
-  physical assault case when PPC hurt provisions are the right law).
-• For assault/hurt: cite PPC Chapter XVI (hurt provisions) — ONE primary section only,
-  not multiple sub-sections with identical text.
-• For tenancy: cite the specific Transfer of Property Act sections on lease/rent, NOT
-  sections about property transfer or mortgage.
-• NEVER cite a retrieved [Source] section just because it scored high — verify it actually
-  governs the SPECIFIC facts. A keyword match ("hurt", "house", "assault") is not enough.
-  Example: PPC S.452 (house-trespass after preparation for hurt) is WRONG for a wife being
-  beaten by her husband in their shared home — the husband is not a trespasser.
-• When in doubt about a section's relevance: OMIT it and cite the Act name only.
-
-CASE FACT GROUNDING — MANDATORY FOR ALL TYPE C/D RESPONSES:
-• The summary must paraphrase the actual situation — who is hurting whom, where, what for,
-  what the user is asking. Do NOT write "this is a serious legal matter."
-• At least 2 of 4 rights must reference a fact from the query (the victim's age, the
-  city/province, the relationship of the abuser, the dowry demand, the confinement).
-• At least 2 of 4 next_steps must reference a fact (e.g. "Hyderabad police",
-  "the Child Marriage Restraint Act because she was 16", "contact your parents").
-• Generic boilerplate ("consult a lawyer", "know your rights") with no fact reference
-  is REJECTED. Each item must read like it was written for THIS user.
-
-══════════════════════════════════════════════
-URDU PERSONA RULE — MANDATORY FOR URDU OUTPUT
-══════════════════════════════════════════════
-When responding in Urdu, write in natural second-person advisory tone. Vary your phrasing:
-
-RIGHTS — use varied sentence starts, not all the same:
-✅ "قریبی تھانے میں ایف آئی آر درج کروانے کا آپ کو مکمل حق حاصل ہے۔"
-✅ "پاکستان پینل کوڈ کے تحت آپ مجرم کے خلاف ہرجانہ مانگ سکتے ہیں۔"
-✅ "اگر آپ وکیل کا خرچہ برداشت نہیں کر سکتے تو مفت قانونی امداد کا حق موجود ہے۔"
-✅ "آپ کو آجر کی جانب سے کی گئی برخاستگی کو عدالت میں چیلنج کرنے کا اختیار ہے۔"
-❌ WRONG pattern: "آپ کا حق ہے کہ آپ X کریں" — the second "آپ" is redundant and unnatural
-❌ WRONG: every right starting with identical "آپ کا حق ہے کہ"
-
-NEXT STEPS — concrete sequence, varied phrasing:
-✅ "فوری طور پر قریبی تھانے میں ایف آئی آر درج کروائیں — پولیس انکار نہیں کر سکتی۔"
-✅ "سرکاری ہسپتال سے میڈیکو لیگل رپورٹ (MLR) حاصل کریں تاکہ چوٹوں کا ریکارڈ ہو۔"
-✅ "اگر پولیس ایف آئی آر درج کرنے سے انکار کرے تو CrPC دفعہ 22-A کے تحت مجسٹریٹ سے رجوع کریں۔"
-❌ WRONG: vague steps like "وکیل سے مشورہ کریں" without specifying what, when, or why
-
-For English, similarly vary sentence structure in rights — don't start every item with "Right to":
-✅ "Under PPC Section 337-A, you are entitled to have the assailant prosecuted for causing hurt."
-✅ "Police officers cannot legally refuse to register an FIR for a cognisable offence."
-✅ "Free legal representation is available through the District Legal Aid Committee if you cannot afford a lawyer."
-❌ WRONG: "Right to file an FIR. Right to compensation. Right to legal aid." — repetitive start
-
-══════════════════════════════════════════════
-SUMMARY QUALITY RULE — CRITICAL
-══════════════════════════════════════════════
-The "summary" field must be a professional, narrative legal assessment — NOT a generic description.
-
-GOOD summary (English example):
-"The user is a victim of physical assault by local individuals and has grounds to file a criminal complaint. Under the Pakistan Penal Code, hurt caused by assault is a cognisable offence and the police cannot refuse to register an FIR. The user may also be entitled to compensation and free legal aid if unable to afford a lawyer."
-
-GOOD summary (Urdu example):
-"آپ کے ساتھ محلے کے لڑکوں نے تشدد کیا ہے جو پاکستانی قانون کے تحت ایک سنگین فوجداری جرم ہے۔ آپ قریبی تھانے میں ایف آئی آر درج کروا سکتے ہیں اور پولیس اس سے انکار نہیں کر سکتی۔ آپ کو مجرموں کے خلاف قانونی کارروائی کا مکمل حق حاصل ہے۔"
-
-BAD summary (too generic — DO NOT write this):
-"You have a legal issue. You need legal help." ← REJECTED
-"قانونی مسئلہ ہے۔ آپ کو مدد چاہیے۔" ← REJECTED
-
-The summary must:
-  (1) identify the specific dispute by quoting key facts from the user's query
-      (relationship, location, ages, what happened),
-  (2) name the primary applicable Pakistani legal framework(s) by Act/Code name,
-  (3) state at least one specific right or remedy under that framework,
-  (4) mention the most urgent practical step (medical/MLR, FIR, protection order, etc.),
-  (5) be 3 to 5 sentences long — NEVER one sentence and NEVER more than five.
-
-GOOD summary (multi-fact case, English — cites only laws that appear in retrieved sources):
-"Your sister's situation in Hyderabad involves several overlapping offences under Pakistani law that are present in our database: underage forced marriage at 16, harassment for dowry, and criminal threats. The Child Marriage Restraint Act criminalises an adult marrying a child, while Pakistan Penal Code Section 498-A criminalises cruelty by a husband or his relatives for dowry, and Section 506 covers criminal intimidation. The Dissolution of Muslim Marriages Act 1939 also gives her grounds to seek dissolution of the marriage. Note: a specific provincial Domestic Violence Act would normally also apply but is not present in our legal database — please consult a qualified lawyer for that. The most urgent step is to secure her physical safety by filing an FIR at the nearest Hyderabad police station."
-
-GOOD summary (multi-fact case, Urdu — cites only laws that appear in retrieved sources):
-"آپ کی بہن کی حیدر آباد میں 16 سال کی عمر میں جبری شادی کرائی گئی ہے اور وہ جہیز کی بدسلوکی اور دھمکیوں کا شکار ہے۔ د چائلڈ میرج ریسٹرینٹ ایکٹ کم عمر لڑکی کے ساتھ شادی کو جرم قرار دیتا ہے، پاکستان پینل کوڈ کی دفعہ 498-A جہیز کے لئے بدسلوکی کو جرم بناتی ہے، اور دفعہ 506 مجرمانہ دھمکی کو جرم بناتی ہے۔ د ڈسولیوشن آف مسلم میرجز ایکٹ 1939 کے تحت وہ شادی کی تنسیخ کی درخواست بھی دے سکتی ہے۔ نوٹ: کوئی مخصوص صوبائی ڈومیسٹک وائلنس قانون بھی لاگو ہو سکتا ہے لیکن ہماری ڈیٹابیس میں موجود نہیں — اس کے لئے براہ کرم وکیل سے رجوع کریں۔ فوری طور پر حیدر آباد کے قریبی تھانے میں ایف آئی آر درج کروائیں تاکہ وہ محفوظ طریقے سے والدین سے رابطہ کر سکے۔"
-
-══════════════════════════════════════════════
-RIGHTS vs NEXT STEPS — THESE ANSWER DIFFERENT QUESTIONS (frequent failure mode)
-══════════════════════════════════════════════
-"rights"     = legal ENTITLEMENTS, protections, and remedies the law GIVES the
-               user — true whether or not they ever act on them.
-               Answers: "What am I owed, protected by, or able to invoke,
-               and under which law?"
-"next_steps" = the practical SEQUENCE OF ACTIONS the user should physically go
-               and do — who to approach, with what, in what order.
-               Answers: "What do I actually go and do, first / then / after that?"
-
-THE MOST COMMON FAILURE — restating the same act once as an "entitlement" and
-again as a "step", so the two lists read as near-duplicates:
-  ❌ rights:      "You have the right to report this matter to the FIA or PTA."
-  ❌ next_steps:  "Report the matter to the FIA or PTA, providing your evidence."
-  → Identical action, described twice. "A right to report" is not a real legal
-    entitlement (anyone can report anything to anyone). Reporting is an ACTION
-    → it belongs in next_steps. The matching "right" must instead name the
-    actual statutory REMEDY that the law makes available once you do report:
-  ✅ rights:      "Under PECA Section 20(2), once you report it, the Authority
-                   can order removal or blocking of the false content — this is
-                   a statutory remedy, not just a complaint going nowhere."
-  ✅ next_steps:  "File a complaint with the FIA Cybercrime Wing, attaching
-                   screenshots and message logs as evidence."
-
-SELF-CHECK — apply to every right before finalizing: "Is this naming a LEGAL
-PROTECTION, POWER, OR REMEDY that exists in the cited law — or is it secretly
-just describing an ACTION the user takes?" If it's an action, move it to
-next_steps and replace the right with the actual legal basis/remedy that makes
-taking that action meaningful (a removal power, a compensation entitlement, a
-duty the authorities owe the user, a procedural protection, etc.).
-
-TWO MORE WAYS THIS DUPLICATION SNEAKS BACK IN — CHECK BOTH:
-
-(a) SENTENCE-SKELETON REUSE between a right and its matching step. Sometimes
-    the only real entitlement genuinely IS "you may petition the Authority for
-    X" and the matching step genuinely IS "go petition the Authority for X" —
-    that pairing is fine, but ONLY if they are worded around DIFFERENT halves
-    of the idea, never the same skeleton:
-      ❌ right: "...has the right to apply to the Authority for removal,
-                 destruction, or blocking of access to the fake accounts..."
-      ❌ step:  "Report the matter to the Authority and apply for removal,
-                 destruction, or blocking of access to the fake accounts..."
-      → Same skeleton ("apply/report to the Authority for removal, destruction,
-        or blocking") repeated almost verbatim — this is the SAME sentence
-        twice and must be rewritten. Split the idea instead:
-      ✅ right: "PECA Section 16(2) does not leave it to the platform's
-                 goodwill — it obliges the Authority to issue a binding order
-                 securing, destroying, or blocking the stolen identity
-                 information once you apply, with legal force behind it."
-      ✅ step:  "Submit a written application to the PTA/FIA Cybercrime Wing
-                 citing PECA Section 16, attaching screenshots, account URLs,
-                 and message logs as proof of the unauthorized use."
-    The right talks about what the law FORCES the authority to do for you;
-    the step talks about WHERE to go, WHAT to bring, and WHICH provision to
-    cite. If you can swap a right and a step and the sentence still basically
-    works, the skeleton is shared — rewrite one side around the other half.
-
-(b) NEAR-DUPLICATE RIGHTS WITHIN THE SAME LIST. Before finalizing, compare
-    every right to every OTHER right (not just to next_steps). If two of them
-    are paraphrases of the same statutory provision or the same idea reworded
-    ("right to apply for removal of the accounts" / "right to report the
-    matter and seek removal of the accounts" — these are the same claim said
-    twice), DELETE one and replace it with a right grounded in a genuinely
-    DIFFERENT provision or protection from the sources.
-
-══════════════════════════════════════════════
-RIGHTS AND NEXT STEPS — MINIMUM REQUIREMENTS
-══════════════════════════════════════════════
-• "rights" array: MINIMUM 4 items. Each must state a DISTINCT LEGAL ENTITLEMENT,
-  PROTECTION, OR REMEDY under a DIFFERENT legal basis — not an action already
-  listed in next_steps (see self-check above).
-• "next_steps" array: MINIMUM 4 items. Each must be a CONCRETE, actionable step in logical sequence.
-• DO NOT pad with generic filler — every item must add specific value.
-• Steps should escalate: immediate action → documentation → legal process → escalation if ignored.
-• No right and no step should be paraphrasable into each other — if you can swap
-  one for the other and the meaning survives, rewrite the right to state the
-  underlying entitlement instead of the act.
-
-CITATION FORMAT — STRICT (CRITICAL FOR UI RENDERING):
-Every item in the "laws" array MUST start with one of these exact patterns:
-  "<Law Name> — Section <X>: <one-sentence explanation>"
-  "<Law Name>: <one-sentence explanation>"   (only if no specific section is being cited)
-
-Use the em-dash character — (Unicode U+2014), NOT a hyphen-minus, between law name and
-section. The colon after the citation is required so the UI can highlight the prefix.
-The section format is "Section X" (English) or "دفعہ X" (Urdu) where X is the digit.
-
-Examples (English — use only laws that appear in [Source N] blocks):
-  "Pakistan Penal Code — Section 498-A: Husband or his relatives subjecting a woman to cruelty for dowry is punishable with up to 3 years' imprisonment."
-  "Code of Criminal Procedure — Section 154: Police are required to register an FIR for any cognisable offence reported to them."
-
-Examples (Urdu — Act name in Urdu, section number in digits — laws must be in retrieved sources):
-  "پاکستان پینل کوڈ — دفعہ 498-A: جہیز کے لئے بدسلوکی کرنے پر شوہر یا سسرال کو 3 سال تک قید ہو سکتی ہے۔"
-  "کوڈ آف کرمنل پروسیجر — دفعہ 154: قابل دست اندازی جرم کی رپورٹ پر پولیس ایف آئی آر درج کرنے کی پابند ہے۔"
-
-GOOD next_step examples (notice varied structure):
-  "Go to the nearest police station immediately and file an FIR under PPC Section 337-A."
-  "Obtain a medico-legal report (MLR) from a government hospital within 24 hours to document injuries."
-  "If police refuse the FIR, approach the Judicial Magistrate directly under CrPC Section 22-A."
-  "Apply to the District Legal Aid Committee for free legal representation."
-
-GOOD rights examples (notice NO repetitive 'Right to' prefix):
-  "Under PPC Chapter XVI, you are entitled to have the assailant prosecuted for causing hurt."
-  "Police cannot legally refuse to register an FIR for a cognisable offence under CrPC Section 154."
-  "Free legal representation is available through the Legal Aid & Justice Authority if you cannot afford a lawyer."
-  "You may claim compensation (daman) for injuries under PPC Section 337-D."
-
-══════════════════════════════════════════════
-OUTPUT FORMAT — STRICT JSON ONLY
-══════════════════════════════════════════════
-Respond ONLY with this JSON object (no preamble, no markdown fences, no trailing text):
-
-{
-  "summary": "Professional 2-3 sentence narrative legal assessment. Identify the specific dispute, the applicable Pakistani law framework, and the most important right/option. Must be specific — not generic.",
-    f'"category": "one of: {CATEGORY_STRING}",'  "laws": [
-    "Law Name — Section X: one sentence on the SPECIFIC provision that directly governs this dispute.",
-    "Law Name — Section Y: a DIFFERENT provision. Do NOT cite definitional/jurisdictional sections.",
-    "Minimum 3 entries for TYPE C/D. No duplicates. No sections with identical effect."
-  ],
-  "rights": [
-    "Natural varied sentence stating a specific right grounded in Pakistani law. Do NOT start every item with 'Right to' (English) or 'آپ کا حق ہے کہ آپ' (Urdu — double آپ is wrong).",
-    "Minimum 4 entries for TYPE C/D. Each right must have a different legal basis."
-  ],
-  "next_steps": [
-    "Concrete sequential action with institution/law reference. Varied sentence structure.",
-    "Minimum 4 entries for TYPE C/D. Steps should be in logical order: immediate → short-term → escalation."
-  ],
-  "risk_level": "Low or Medium or High or Critical",
-  "risk_reason": "One sentence explaining the specific risk in this situation.",
-  "confidence": "High if sources directly address the query | Medium if partially relevant | Low if sources are weak"
-}"""
+_SYSTEM_PROMPT = CASE_ANALYSIS
 
 
 # ── Legal intent detection ────────────────────────────────────────────────────
@@ -810,7 +475,7 @@ _active_key_idx = 0
 
 @functools.lru_cache(maxsize=None)
 def _client_for_key(idx: int) -> Groq:
-    return Groq(api_key=GROQ_API_KEYS[idx])
+    return Groq(api_key=GROQ_API_KEYS[idx], timeout=45.0, max_retries=0)
 
 
 def _get_client() -> Groq:
@@ -847,6 +512,7 @@ def call_groq_with_rotation(make_call):
     retries — transparent to callers, whose own retry/error-handling only
     sees an exception once every key has been tried.
     """
+    waited = False
     while True:
         client = _get_client()
         try:
@@ -854,6 +520,15 @@ def call_groq_with_rotation(make_call):
         except Exception as e:
             if _is_rate_limit_error(e) and _rotate_key():
                 continue
+            # A short bounded wait lets normal follow-up requests work on free
+            # accounts without changing models or blocking the ASGI event loop.
+            if getattr(e, "status_code", None) == 429 and not waited:
+                match = re.search(r"try again in\s*([\d.]+)s", str(e), re.I)
+                delay = float(match.group(1)) + 1 if match else 10
+                if delay <= 35:
+                    waited = True
+                    time.sleep(delay)
+                    continue
             raise
 
 
@@ -898,11 +573,6 @@ def analyze_with_rag(
 
     Returns structured LegalAnalysis. Retries once on transient errors.
     """
-    try:
-        _get_client()  # readiness check — raises RuntimeError if no key configured
-    except RuntimeError as e:
-        return LegalAnalysis(error=str(e))
-
     # ── Pre-LLM legal intent gate ─────────────────────────────────────────────
     # Classify the query BEFORE spending tokens on retrieval/LLM.
     intent = classify_legal_intent(query)
@@ -931,12 +601,27 @@ def analyze_with_rag(
             confidence = "Low",
         )
 
+    context_chunks = [chunk for chunk in context_chunks if float(chunk.get("score", 0)) >= 0.40]
+    if not context_chunks:
+        summary = (
+            "اس سوال کے لیے کافی متعلقہ قانونی مواد نہیں ملا۔ مزید تفصیل دیں یا مستند وکیل سے رابطہ کریں۔"
+            if language == "Urdu" else
+            "I could not find enough relevant law in the available documents for this question. "
+            "Please add more details or consult a qualified lawyer."
+        )
+        risk, reason = stabilize_risk("Low", query, "General / Other")
+        return LegalAnalysis(summary=summary, confidence="Low", risk_level=risk, risk_reason=reason)
+    try:
+        _get_client()
+    except RuntimeError as exc:
+        return LegalAnalysis(error=str(exc))
+
     # ── Pre-LLM deterministic risk classification ─────────────────────────────
     _pre_risk = "Medium"
     _q_low = query.lower()
-    if any(kw in _q_low for kw in _HARD_HIGH_KEYWORDS):
+    if any(_matches_risk_term(kw, _q_low) for kw in _HARD_HIGH_KEYWORDS):
         _pre_risk = "High"
-    elif any(kw in _q_low for kw in _SOFT_HIGH_KEYWORDS) and not _is_info_query(_q_low):
+    elif any(_matches_risk_term(kw, _q_low) for kw in _SOFT_HIGH_KEYWORDS) and not _is_info_query(_q_low):
         _pre_risk = "High"
     elif _is_info_query(_q_low) and len(query.split()) < 20:
         _pre_risk = "Low"
@@ -951,6 +636,12 @@ def analyze_with_rag(
     }.get(intent, "TYPE C")
 
     user_msg = _build_user_message(query, context_chunks, language, chat_history)
+    user_msg += "\nCanonical categories: " + CATEGORY_STRING
+    user_msg += (
+        "\nReturn law_source_ids as an array of integer Source numbers, one per laws entry in the same order. "
+        "Every cited section must occur in that source. category, risk_level, and confidence must retain "
+        "their allowed English enum values even when the prose is Urdu."
+    )
     user_msg += (
         f"\n\nQUERY CLASSIFICATION HINT: This query appears to be {intent_hint}. "
         f"PRE-ASSESSED RISK (rule-based, use as baseline): {_pre_risk}. "
@@ -962,10 +653,11 @@ def analyze_with_rag(
             response = call_groq_with_rotation(lambda c: c.chat.completions.create(
                 model=GROQ_LLM_MODEL,
                 messages=[
-                    {"role": "system", "content": _SYSTEM_PROMPT},
+                    {"role": "system", "content": CASE_ANALYSIS},
                     {"role": "user",   "content": user_msg},
                 ],
-                temperature=0.15,     # low temp for factual legal responses
+                temperature=0.15,
+                **({"reasoning_effort": "low"} if "gpt-oss" in GROQ_LLM_MODEL else {}),
                 max_tokens=1800,
                 response_format={"type": "json_object"},
             ))
@@ -985,7 +677,7 @@ def analyze_with_rag(
                 category = "General / Other"
 
             raw_risk = data.get("risk_level", "Medium")
-            if raw_risk not in ("Low", "Medium", "High"):
+            if raw_risk not in ("Low", "Medium", "High", "Critical"):
                 raw_risk = "Medium"
 
             conf = data.get("confidence", "Medium")
@@ -1001,7 +693,7 @@ def analyze_with_rag(
             import re as _re
             _check_text = "\n".join([
                 summary_text,
-                *[str(x) for x in data.get("laws", [])],
+                *[str(x).split(":", 1)[-1] for x in data.get("laws", [])],
                 *[str(x) for x in data.get("rights", [])],
                 *[str(x) for x in data.get("next_steps", [])],
             ])
@@ -1050,6 +742,10 @@ def analyze_with_rag(
             if _lang_mismatch_note:
                 summary_text = summary_text + _lang_mismatch_note
 
+            laws, unsupported = validate_citations(data.get("laws", []), data.get("law_source_ids", []), context_chunks, language)
+            if unsupported or not laws:
+                conf = "Low"
+
             # ── Risk stabilization pass ───────────────────────────────────────
             stable_risk, override_reason = stabilize_risk(raw_risk, query, category)
             risk_reason = str(data.get("risk_reason", ""))
@@ -1060,9 +756,9 @@ def analyze_with_rag(
             return LegalAnalysis(
                 summary     = summary_text,
                 category    = category,
-                laws        = list(data.get("laws", [])),
-                rights      = list(data.get("rights", [])),
-                next_steps  = list(data.get("next_steps", [])),
+                laws        = laws,
+                rights      = text_list(data.get("rights", [])),
+                next_steps  = text_list(data.get("next_steps", [])),
                 risk_level  = stable_risk,
                 risk_reason = risk_reason,
                 confidence  = conf,
@@ -1117,7 +813,7 @@ def _transcribe_urdu_elevenlabs(audio_bytes: bytes) -> tuple[str, Optional[str]]
         Body:   multipart/form-data with audio file + model_id
     """
     try:
-        from utils.config import ELEVENLABS_API_KEY
+        from app.utils.config import ELEVENLABS_API_KEY
     except ImportError:
         ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY", "")
 
@@ -1233,7 +929,7 @@ def transcribe_audio(
                 "No speech detected. Please speak clearly and try again."
             )
 
-        logger.info(f"Transcription successful: {text[:100]}")
+        logger.info("Transcription completed (%d characters)", len(text))
 
         return (text, None)
 
@@ -1284,7 +980,7 @@ def transcribe_audio(
 # ═══════════════════════════════════════════════════════════════════════════════
 
 _DOC_RETRIEVAL_CHARS = 800    # chars of doc used as FAISS retrieval query
-_DOC_ANALYSIS_CHARS  = 3000   # max chars of doc text sent to LLM
+_DOC_ANALYSIS_CHARS  = 6000  # each segment is reviewed; coverage is returned to the client
 
 _DISCLAIMER_EN = (
     "This analysis is generated by an AI assistant and is for informational purposes only. "
@@ -1322,9 +1018,9 @@ _DOC_TYPE_CATEGORIES: dict[str, frozenset] = {
         "Property Law", "Contract Law", "Labour Law",
         "Family Law", "Civil Law", "Criminal Law",
     }),
-    "FIR":                 frozenset({"Criminal Law", "Procedural Law"}),
+        "FIR":                 frozenset({"Criminal Law", "Civil Law / Procedure"}),
     "Court Order":         frozenset({
-        "Criminal Law", "Civil Law", "Procedural Law",
+        "Criminal Law", "Civil Law", "Civil Law / Procedure",
         "Family Law", "Property Law", "Labour Law",
     }),
     "Rent Agreement":      frozenset({"Property Law", "Contract Law"}),
@@ -1393,158 +1089,7 @@ def _filter_chunks_for_document(
     return out
 
 
-_DOC_ANALYSIS_SYSTEM_PROMPT = """You are a Pakistan legal aid assistant. A citizen has uploaded a legal document and needs help understanding it.
-
-══════════════════════════════════════════════
-GROUNDING RULES — MANDATORY (same as main system)
-══════════════════════════════════════════════
-1. For cited_laws: ONLY cite laws whose names appear verbatim in a [Source N] block.
-   Never invent section numbers or law names from training knowledge.
-2. Each cited_laws entry must follow: "<Law Name> — Section X: one-sentence explanation"
-   Use em-dash (—). The section number must appear in that source's section field or body.
-3. Verify: the source body text must actually describe the rule you are claiming.
-   A section number appearing in a schedule/appendix does NOT count as an operative section.
-4. If the document references a law not present in retrieved sources, name it in summary
-   but DO NOT add it to cited_laws. If no sources retrieved, cited_laws must be [].
-5. NEVER repeat the same law + section twice.
-
-══════════════════════════════════════════════
-ANTI-SPECULATION — ABSOLUTE (CRITICAL)
-══════════════════════════════════════════════
-Every obligation, penalty, risk, deadline, and consequence you include MUST be grounded in:
-  (A) Something explicitly written in the uploaded document text, OR
-  (B) A retrieved [Source N] block that directly governs this specific document type
-
-The following are FORBIDDEN unless the document or a retrieved source states them:
-  ✗ "tenant may be evicted"          — unless the document says so
-  ✗ "criminal penalties apply"       — unless the document or a source specifies them
-  ✗ "court proceedings may follow"   — unless the document threatens this explicitly
-  ✗ "employer must pay compensation" — unless stated in the document or in a retrieved source
-  ✗ "criminal charges could be filed"— unless the document or source says this
-
-When a consequence is neither in the document text nor supported by a retrieved source:
-  • OMIT it from risk_indicators entirely, OR
-  • If contextually important, flag the gap explicitly:
-      WRONG: "Criminal penalties may apply."
-      RIGHT:  "The document does not specify consequences — consult a lawyer to assess your obligations."
-
-CONSERVATIVE INTERPRETATION RULE — MANDATORY:
-  • Prefer the narrower reading. A legal notice demands something — do NOT assume it will result
-    in criminal charges, court proceedings, or arrest unless the document or a source says so.
-  • When in doubt: omit the inferred consequence. Silence is safer than speculation.
-  • Never derive a consequence from document type alone (e.g. "FIRs lead to arrest" is not grounds
-    for stating arrest will occur unless the retrieved sources confirm it for this situation).
-
-══════════════════════════════════════════════
-DOCUMENT FACTS vs. LEGAL GUIDANCE — DISTINGUISH CLEARLY
-══════════════════════════════════════════════
-Your output must clearly distinguish two categories:
-
-DOCUMENT FACTS (drawn directly from the uploaded text):
-  • High confidence — only include if the document actually states this.
-  • Signal with: "The document states…" / "This notice demands…" / "The agreement requires…"
-
-LEGAL GUIDANCE (drawn from retrieved [Source N] blocks):
-  • Applies law to the document — cite the source by number.
-  • Signal with: "Under [Law Name — Source N]…" / "Pakistani law provides that…"
-  • If no relevant retrieved source exists for a point, omit it entirely.
-
-Never blend the two without attribution. Do not present a legal consequence as a document fact
-if the document does not state it.
-
-══════════════════════════════════════════════
-FIELD-SPECIFIC GROUNDING RULES
-══════════════════════════════════════════════
-
-summary (3–4 sentences):
-  1. What this document IS and who sent it — document facts only.
-  2. What it demands or requires — document facts only.
-  3. The consequence explicitly stated in the document. If the document states NO consequence,
-     write: "The document does not specify consequences for non-compliance."
-  4. (Optional) Most urgent action the recipient should take.
-  DO NOT speculate about unstated consequences. If the document does not threaten a specific
-  outcome, do not invent one.
-
-key_legal_points (minimum 3, maximum 6):
-  Each entry must be EITHER:
-    (a) A fact explicitly stated in the document — prefix with "The document states:"
-    (b) A legal point directly supported by a retrieved [Source N] — prefix with "Under [Law]:"
-  NEVER include an obligation or consequence that appears in neither the document nor the sources.
-
-deadlines:
-  ONLY dates, time windows, or response deadlines explicitly written in the document text.
-  Do NOT infer deadlines from document type ("legal notices typically require 30 days" is
-  FORBIDDEN unless this specific document says so). Return [] if no deadline is stated.
-
-procedural_guidance (minimum 3 steps):
-  Concrete, actionable steps for the recipient. May draw on retrieved sources for context.
-  Use "you should consider" / "it is advisable to" for proactive steps not demanded by the document.
-  Reserve "you must" only for obligations explicitly stated in the document.
-
-risk_indicators:
-  ONLY include a risk if:
-    (a) The document explicitly states a consequence or penalty (document fact), OR
-    (b) A retrieved [Source N] block directly specifies the legal consequence for this document type.
-  WRONG: "Criminal charges may follow." (generic speculation — no document basis)
-  RIGHT:  "The document threatens to file a civil suit for PKR 500,000." (document fact)
-  RIGHT:  "Under [Law — Source 2], failure to vacate within the notice period constitutes an
-           actionable breach." (source-grounded)
-  Return [] if no risk is clearly grounded in the document or retrieved sources.
-
-══════════════════════════════════════════════
-UNCERTAINTY COMMUNICATION
-══════════════════════════════════════════════
-When the document is unclear, incomplete, or your evidence is weak:
-  • Set confidence to "Low" and state the limitation explicitly in summary.
-  • Do NOT fill gaps with generic legal context — omission is better than speculation.
-  • Acceptable uncertainty phrase: "The document does not specify [X] — a lawyer should review
-    it to clarify your obligations."
-
-══════════════════════════════════════════════
-URDU EXPLANATION — NON-NEGOTIABLE
-══════════════════════════════════════════════
-The "urdu_explanation" field MUST be in plain Urdu script (U+0600–U+06FF) regardless of UI language.
-Write as if explaining to a neighbor with no legal education:
-• What is this document and who sent it?
-• What does it demand or threaten — only what the document actually says?
-• What should the recipient do immediately?
-Use simple everyday Urdu. No legal jargon. 3–5 sentences.
-ZERO English code-switching: every word must be Urdu — including adjectives and connectors that
-have common English equivalents (write 'پرامن' not 'peaceful', 'باعزت' not 'respectful'). If an
-English legal term has no natural Urdu equivalent, explain the concept in Urdu words instead of
-naming it in English. Numbers/dates may use Western digits inside the Urdu sentence, as is normal
-in Pakistani Urdu (e.g. 'نومبر 2024').
-Apply the same anti-speculation rule: only describe consequences the document explicitly states.
-
-══════════════════════════════════════════════
-OUTPUT — STRICT JSON ONLY
-══════════════════════════════════════════════
-Respond with ONLY this JSON object (no markdown, no preamble, no trailing text):
-
-{
-  "summary": "3–4 sentences: (1) what this document is and who sent it, (2) what it demands, (3) consequence explicitly stated in the document OR 'The document does not specify consequences for non-compliance', (4) most urgent action for the recipient",
-  "key_legal_points": [
-    "The document states: [fact drawn directly from the document text]",
-    "Under [Law Name — Source N]: [legal point directly supported by that retrieved source]",
-    "Minimum 3, maximum 6. Each item prefixed with 'The document states:' or 'Under [Law/Source]:'."
-  ],
-  "deadlines": [
-    "Exact date or time window written in the document — empty [] if the document states none"
-  ],
-  "procedural_guidance": [
-    "Step 1: concrete immediate action for the recipient",
-    "Step 2: next action — immediate → short-term → escalation if ignored",
-    "Minimum 3 steps"
-  ],
-  "risk_indicators": [
-    "Consequence explicitly stated in the document, OR consequence proven by a retrieved source for this document type — empty [] if neither applies"
-  ],
-  "cited_laws": [
-    "Law Name — Section X: direct relevance to this document (only laws present in retrieved [Source N] blocks)"
-  ],
-  "urdu_explanation": "سادہ اردو وضاحت — یہ دستاویز کیا ہے، کیا مانگا گیا ہے، اور دستاویز میں لکھے نتائج کیا ہیں",
-  "confidence": "High if document is clear and sources directly apply | Medium if partially relevant | Low if document is unclear or incomplete — state the limitation in summary"
-}"""
+_DOC_ANALYSIS_SYSTEM_PROMPT = DOCUMENT_ANALYSIS
 
 
 def _build_document_analysis_message(
@@ -1643,7 +1188,7 @@ def _build_document_analysis_message(
     )
 
 
-def analyze_document_with_rag(
+def _analyze_document_chunk(
     document_text: str,
     document_type: str,
     detected_language: str,
@@ -1665,7 +1210,7 @@ def analyze_document_with_rag(
         DocumentAnalysis. On any failure, .error is set and other fields may be empty.
     """
     # Local imports avoid circular dependency — rag_engine does not import groq_client.
-    from utils.rag_engine import retrieve, preprocess_query, index_ready
+    from app.utils.rag_engine import retrieve, preprocess_query, index_ready
     import unicodedata as _ud
 
     disclaimer = _DISCLAIMER_UR if language == "Urdu" else _DISCLAIMER_EN
@@ -1716,15 +1261,18 @@ def analyze_document_with_rag(
         document_text, document_type, detected_language, context_chunks, language
     )
 
+    user_msg += "\nReturn cited_source_ids: one integer Source number for each cited_laws entry in the same order."
+
     for attempt in range(2):
         try:
             response = call_groq_with_rotation(lambda c: c.chat.completions.create(
                 model=GROQ_LLM_MODEL,
                 messages=[
-                    {"role": "system", "content": _DOC_ANALYSIS_SYSTEM_PROMPT},
+                    {"role": "system", "content": DOCUMENT_ANALYSIS},
                     {"role": "user",   "content": user_msg},
                 ],
                 temperature=0.15,
+                **({"reasoning_effort": "low"} if "gpt-oss" in GROQ_LLM_MODEL else {}),
                 max_tokens=1800,
                 response_format={"type": "json_object"},
             ))
@@ -1753,13 +1301,19 @@ def analyze_document_with_rag(
                     time.sleep(0.5)
                     continue
 
+            cited_laws, unsupported = validate_citations(
+                data.get("cited_laws", []), data.get("cited_source_ids", []), context_chunks, language,
+            )
+            if unsupported or not context_chunks:
+                conf = "Low"
+
             return DocumentAnalysis(
                 summary             = str(data.get("summary", "")),
-                key_legal_points    = list(data.get("key_legal_points", [])),
-                deadlines           = list(data.get("deadlines", [])),
-                procedural_guidance = list(data.get("procedural_guidance", [])),
-                risk_indicators     = list(data.get("risk_indicators", [])),
-                cited_laws          = list(data.get("cited_laws", [])),
+                key_legal_points    = text_list(data.get("key_legal_points", [])),
+                deadlines           = text_list(data.get("deadlines", [])),
+                procedural_guidance = text_list(data.get("procedural_guidance", [])),
+                risk_indicators     = text_list(data.get("risk_indicators", [])),
+                cited_laws          = cited_laws,
                 urdu_explanation    = urdu_expl,
                 confidence          = conf,
                 disclaimer          = disclaimer,
@@ -1783,3 +1337,46 @@ def analyze_document_with_rag(
             return DocumentAnalysis(error=f"Groq API error: {err}", disclaimer=disclaimer)
 
     return DocumentAnalysis(error="Analysis failed after retries.", disclaimer=disclaimer)
+
+
+def analyze_document_with_rag(document_text: str, document_type: str,
+                              detected_language: str, language: str = "English") -> DocumentAnalysis:
+    """Review consecutive segments, merging findings without silently dropping the ending."""
+    total = len(document_text)
+    disclaimer = _DISCLAIMER_UR if language == "Urdu" else _DISCLAIMER_EN
+    if total > 50000:
+        return DocumentAnalysis(error="Documents are limited to 50,000 extracted characters. Split this document into smaller files.",
+                                disclaimer=disclaimer, total_characters=total, truncated=True)
+    segments = [document_text[index:index + _DOC_ANALYSIS_CHARS]
+                for index in range(0, total, _DOC_ANALYSIS_CHARS)] or [document_text]
+    completed = []
+    analyzed = 0
+    deadline = time.monotonic() + 100
+    failure = None
+    for segment in segments:
+        if completed and time.monotonic() > deadline - 45:
+            break
+        result = _analyze_document_chunk(segment, document_type, detected_language, language)
+        if result.error:
+            failure = result.error
+            break
+        completed.append(result)
+        analyzed += len(segment)
+    if not completed:
+        return DocumentAnalysis(error=failure or "Document analysis could not complete. Please retry.",
+                                disclaimer=disclaimer, total_characters=total, truncated=True)
+    def merged(field):
+        return list(dict.fromkeys(item for result in completed for item in getattr(result, field)))
+    truncated = analyzed < total
+    confidence = min((result.confidence for result in completed),
+                     key=lambda value: {"Low": 0, "Medium": 1, "High": 2}.get(value, 0))
+    return DocumentAnalysis(
+        summary="\n\n".join(result.summary for result in completed if result.summary),
+        key_legal_points=merged("key_legal_points"), deadlines=merged("deadlines"),
+        procedural_guidance=merged("procedural_guidance"), risk_indicators=merged("risk_indicators"),
+        cited_laws=merged("cited_laws"),
+        urdu_explanation="\n\n".join(result.urdu_explanation for result in completed if result.urdu_explanation),
+        confidence="Low" if truncated else confidence, disclaimer=disclaimer,
+        analyzed_characters=analyzed, total_characters=total,
+        segments_analyzed=len(completed), truncated=truncated,
+    )

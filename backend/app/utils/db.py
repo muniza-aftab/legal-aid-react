@@ -34,9 +34,10 @@ Note on the `applications` table:
 """
 from __future__ import annotations
 import sqlite3
+import os
 from datetime import datetime
 
-from utils.config import DB_PATH
+from app.utils.config import DB_PATH
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -51,7 +52,7 @@ from utils.config import DB_PATH
 # Free-text values are still acceptable in the database; the constraint
 # is enforced at the service layer.
 
-from utils.legal_taxonomy import (
+from app.utils.legal_taxonomy import (
     NGO_CATEGORIES,
     LAWYER_EXPERTISE_AREAS,
     EXPERTISE_SUBAREAS,
@@ -61,13 +62,22 @@ from utils.legal_taxonomy import (
 # Connection helper
 # ─────────────────────────────────────────────────────────────────────────────
 
+class _Connection(sqlite3.Connection):
+    def __exit__(self, *args):
+        try:
+            return super().__exit__(*args)
+        finally:
+            self.close()
+
+
 def get_connection() -> sqlite3.Connection:
     """
     Open a SQLite connection with row_factory so cursors yield dict-like rows.
     Thread-safe (check_same_thread=False) because Streamlit reruns invoke
     DB calls from worker threads.
     """
-    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
+    os.makedirs(os.path.dirname(os.path.abspath(DB_PATH)), exist_ok=True)
+    conn = sqlite3.connect(DB_PATH, check_same_thread=False, timeout=15, factory=_Connection)
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -119,6 +129,7 @@ def init_db() -> None:
     # Migration: add any missing columns to a pre-existing users_logs.
     existing = {row["name"] for row in cur.execute("PRAGMA table_info(users_logs)")}
     for col, defn in [
+        ("city",       "TEXT DEFAULT ''"),
         ("category",   "TEXT DEFAULT ''"),
         ("risk_level", "TEXT DEFAULT ''"),
         ("ai_summary", "TEXT DEFAULT ''"),
@@ -226,6 +237,7 @@ def log_query(
     risk_level: str = "",
     ai_summary: str = "",
     voice_used: bool = False,
+    city: str = "",
 ) -> int:
     """Insert one anonymous query-log row. Returns the new row id."""
     conn = get_connection()
@@ -233,16 +245,17 @@ def log_query(
     cur.execute(
         """INSERT INTO users_logs
            (timestamp, language, query_text, category,
-            risk_level, ai_summary, voice_used)
-           VALUES (?, ?, ?, ?, ?, ?, ?)""",
+            risk_level, ai_summary, voice_used, city)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
         (
             datetime.utcnow().isoformat(sep=" "),
             language,
-            query_text,
+            query_text if os.getenv("STORE_QUERY_TEXT", "false").lower() == "true" else "",
             category,
             risk_level,
-            ai_summary[:300],
+            ai_summary[:300] if os.getenv("STORE_QUERY_TEXT", "false").lower() == "true" else "",
             int(voice_used),
+            city,
         ),
     )
     conn.commit()
@@ -251,7 +264,7 @@ def log_query(
     return row_id
 
 
-def save_feedback(rating: int, comment: str = "") -> int:
+def save_feedback(rating: int, comment: str = "", session_id: str = "") -> int:
     """Insert one feedback row. Returns the new row id."""
     conn = get_connection()
     cur  = conn.cursor()

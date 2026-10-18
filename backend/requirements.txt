@@ -22,3 +22,4 @@ python-dotenv>=1.0.0
 Pillow>=10.0.0
 pytesseract>=0.3.10
 opencv-python-headless>=4.8.0
+pypdfium2>=4.30.0

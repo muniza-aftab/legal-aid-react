@@ -2,6 +2,7 @@
 # Pakistan AI Legal Aid — macOS/Linux Launcher
 
 set -e
+cd "$(dirname "$0")"
 GREEN='\033[0;32m'; YELLOW='\033[1;33m'; RED='\033[0;31m'; NC='\033[0m'
 
 echo ""
@@ -52,7 +53,7 @@ fi
 cd ../frontend
 if [ ! -d "node_modules" ]; then
   echo -e "${YELLOW}[INFO]${NC} Installing frontend dependencies..."
-  npm install -q
+  npm ci -q
 fi
 
 cd ..

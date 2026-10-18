@@ -14,7 +14,7 @@ echo.
 
 :: ── Check Python ────────────────────────────────────────────────
 python --version >nul 2>&1
-if %errorlevel% neq 0 (
+if errorlevel 1 (
     echo [ERROR] Python not found.
     echo [FIX]   Install from https://python.org  ^(check "Add Python to PATH"^)
     pause
@@ -23,7 +23,7 @@ if %errorlevel% neq 0 (
 
 :: ── Check Node.js ────────────────────────────────────────────────
 node --version >nul 2>&1
-if %errorlevel% neq 0 (
+if errorlevel 1 (
     echo [ERROR] Node.js not found.
     echo [FIX]   Install from https://nodejs.org
     pause
@@ -38,9 +38,11 @@ if not exist "%ROOT%backend\venv\Scripts\activate.bat" (
     echo [INFO] Creating Python virtual environment for the first time...
     cd /d "%ROOT%backend"
     python -m venv venv
+    if errorlevel 1 exit /b 1
     call venv\Scripts\activate
     echo [INFO] Installing Python packages ^(may take several minutes^)...
-    pip install -r requirements.txt
+    python -m pip install -r requirements.txt
+    if errorlevel 1 exit /b 1
     cd /d "%ROOT%"
 )
 
@@ -50,7 +52,7 @@ if not exist "%ROOT%backend\.env" (
     copy "%ROOT%backend\.env.example" "%ROOT%backend\.env" >nul
     echo.
     echo  *** ACTION REQUIRED ***
-    echo  Open backend\.env and fill in your GROQ_API_KEY.
+    echo  Open backend\.env and fill in GROQ_API_KEY and ADMIN_PASSWORD.
     echo  Get a free key at:  https://console.groq.com
     echo.
     notepad "%ROOT%backend\.env"
@@ -62,7 +64,8 @@ if not exist "%ROOT%backend\.env" (
 if not exist "%ROOT%frontend\node_modules" (
     echo [INFO] Installing frontend packages ^(first time only — 1-3 min^)...
     cd /d "%ROOT%frontend"
-    npm install
+    call npm ci
+    if errorlevel 1 exit /b 1
     cd /d "%ROOT%"
 )
 
@@ -79,6 +82,7 @@ if "%INDEX_OK%"=="0" (
     cd /d "%ROOT%backend"
     call venv\Scripts\activate
     python build_index.py
+    if errorlevel 1 exit /b 1
     cd /d "%ROOT%"
 ) else (
     echo [OK] FAISS index found.

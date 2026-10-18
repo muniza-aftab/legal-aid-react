@@ -6,7 +6,7 @@
 **React 18 · FastAPI · Groq LLM · FAISS · English / اردو**
 
 [![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=white)](https://react.dev/)
-[![Vite](https://img.shields.io/badge/Vite-5-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Vite](https://img.shields.io/badge/Vite-7-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![Groq](https://img.shields.io/badge/Groq-Llama_3.3_70B-C9A84C?style=flat-square&labelColor=1E3A6E)](https://groq.com/)
@@ -15,6 +15,13 @@
 [![Live Demo](https://img.shields.io/badge/Live_Demo-legal--aid--react.vercel.app-C9A84C?style=flat-square&labelColor=1E3A6E&logo=vercel&logoColor=white)](https://legal-aid-react.vercel.app/)
 
 </div>
+
+## Local setup, deployment and verification
+
+Use [DEPLOYMENT.md](DEPLOYMENT.md) for Vercel/Render settings and safe database migration. [VERIFICATION.md](VERIFICATION.md) records the feature checks and remaining hosting checks. Windows launchers require Python 3.11 and Node 22.13 or newer. After pulling dependency changes, run `pip install -r requirements.txt` in the backend virtual environment and `npm ci` in `frontend`.
+
+Admin APIs require a server-issued `X-Admin-Token`; chat requires a session from `POST /api/chat/sessions` and its `X-Chat-Token`. Set a unique `ADMIN_PASSWORD`; there is no built-in password. Submitted cases require explicit consent. Query text and AI summaries are excluded from new analytics logs by default (`STORE_QUERY_TEXT=false`).
+
 
 A full-stack AI legal aid application that helps Pakistani citizens understand their legal rights. Users describe a legal problem in English or Urdu and receive a risk assessment, applicable law citations, rights summary, recommended NGOs, and a matched lawyer list — all driven by retrieval-augmented generation over a corpus of Pakistani law documents.
 
@@ -43,7 +50,7 @@ A full-stack AI legal aid application that helps Pakistani citizens understand t
 
 | Feature | Description |
 |---|---|
-| **AI Legal Analysis** | Describes case in natural language; Groq Llama 3.3 70B classifies, retrieves relevant law chunks via FAISS, and generates a structured report |
+| **AI Legal Analysis** | Describes case in natural language; Groq gpt-oss-120b classifies, retrieves relevant law chunks via FAISS, and generates a structured report |
 | **RAG Pipeline** | FAISS cosine-similarity search over sentence-transformer embeddings of Pakistani law PDFs |
 | **Multilingual UI** | Full English and Urdu support; Urdu mode is RTL-aware throughout (chat bubbles, cards, filters, forms) |
 | **Voice Input** | Microphone recording + Groq Whisper transcription; .wav/.mp3 file upload also supported |
@@ -65,14 +72,14 @@ A full-stack AI legal aid application that helps Pakistani citizens understand t
 
 | Library | Purpose |
 |---|---|
-| React 18 + Vite 5 | UI framework + build tool (SWC plugin) |
+| React 18 + Vite 7 | UI framework + build tool (React plugin) |
 | TailwindCSS | Utility-first styling with custom CSS variables for light/dark tokens |
 | Framer Motion | Page transitions, card animations, RTL-aware slide-in effects |
 | Zustand | Global state (language, theme, chat messages, analysis result, session ID) |
 | Recharts | Admin analytics charts |
 | React Hook Form + Zod | Case application form validation |
 | lucide-react | Icon library |
-| pdfjs-dist + mammoth | Client-side PDF and .docx text extraction for document upload |
+| pdfjs-dist + fflate | Client-side PDF and .docx text extraction for document upload |
 | axios | HTTP client with `/api` proxy to backend |
 
 ### Backend
@@ -80,10 +87,10 @@ A full-stack AI legal aid application that helps Pakistani citizens understand t
 | Library | Purpose |
 |---|---|
 | FastAPI + Uvicorn | ASGI web framework |
-| Groq SDK | Llama 3.3 70B (chat + analysis) + Whisper (speech-to-text) |
+| Groq SDK | Configurable gpt-oss models (chat + analysis) + Whisper (speech-to-text) |
 | FAISS (CPU) | Vector similarity search over law document embeddings |
 | Sentence Transformers | `all-MiniLM-L6-v2` embeddings for RAG retrieval |
-| SQLite | Persistent storage for NGOs, lawyers, applications, chat sessions |
+| SQLite | Persistent storage for NGOs, lawyers, applications and access tokens (chat history is in memory) |
 | ReportLab | PDF generation with full Urdu/Arabic text support |
 | arabic-reshaper + python-bidi | Proper Urdu ligature shaping for PDFs |
 | ElevenLabs / gTTS | Text-to-speech synthesis (ElevenLabs preferred, gTTS fallback) |
@@ -161,7 +168,7 @@ legal-aid-react/
 │
 ├── start_all.bat                    ← One-click start: sets up venv, builds index, opens both servers
 ├── start_backend.bat                ← Start backend only (activates venv, checks index, runs main.py)
-├── start_frontend.bat               ← Start frontend only (npm install if needed, npm run dev)
+├── start_frontend.bat               ← Start frontend only (npm ci if needed, npm run dev)
 ├── run_project.bat                  ← Legacy launcher (use start_all.bat instead)
 ├── run_project.sh                   ← One-click start (macOS / Linux)
 └── README.md
@@ -176,7 +183,7 @@ legal-aid-react/
 | Requirement | Version | Download |
 |---|---|---|
 | Python | 3.11.x | https://www.python.org/downloads/ |
-| Node.js | 20 LTS | https://nodejs.org/en/download |
+| Node.js | 22.13 or newer | https://nodejs.org/en/download |
 | Groq API Key | — | https://console.groq.com |
 | Tesseract OCR | 5.x (optional) | Required for scanned PDFs and image uploads — see Troubleshooting |
 
@@ -241,7 +248,7 @@ Open a second terminal:
 
 ```cmd
 cd frontend
-npm install
+npm ci
 npm run dev
 ```
 
@@ -277,7 +284,7 @@ python build_index.py    # skip if faiss_index/ already exists
 python main.py &
 
 cd ../frontend
-npm install
+npm ci
 npm run dev
 ```
 
@@ -287,9 +294,9 @@ npm run dev
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `GROQ_API_KEY` | Yes | — | Groq API key for Llama 3.3 70B and Whisper |
+| `GROQ_API_KEY` | Yes | — | Groq API key for the configured Groq models and Whisper |
 | `ELEVENLABS_API_KEY` | No | — | ElevenLabs TTS key; gTTS fallback used if omitted |
-| `ADMIN_PASSWORD` | Yes | `admin123` | Password for the admin dashboard |
+| `ADMIN_PASSWORD` | Yes | No default | Password for the admin dashboard |
 | `MAX_QUERY_LENGTH` | No | `2000` | Maximum characters for a legal query |
 | `MIN_QUERY_LENGTH` | No | `15` | Minimum characters for a legal query |
 
@@ -302,8 +309,8 @@ npm run dev
 | `POST` | `/api/analyze` | Analyze a legal case (text) → classification, risk, laws, NGOs |
 | `POST` | `/api/transcribe` | Transcribe audio file via Groq Whisper |
 | `POST` | `/api/chat` | Multi-turn chat with session memory |
-| `GET` | `/api/tts` | Generate TTS audio for a text string |
-| `POST` | `/api/export-pdf` | Generate and download analysis PDF |
+| `POST` | `/api/tts` | Generate TTS audio for a text string |
+| `POST` | `/api/pdf` | Generate and download analysis PDF |
 | `GET` | `/api/ngos` | List NGOs (supports `city` and `category` query params) |
 | `POST` | `/api/ngos` | Create NGO (admin) |
 | `PUT` | `/api/ngos/{id}` | Update NGO (admin) |
@@ -312,10 +319,10 @@ npm run dev
 | `POST` | `/api/lawyers` | Create lawyer (admin) |
 | `PUT` | `/api/lawyers/{id}` | Update lawyer (admin) |
 | `DELETE` | `/api/lawyers/{id}` | Delete lawyer (admin) |
-| `POST` | `/api/analyze-document` | Upload a document (PDF/DOCX/image) → extract text, classify type, retrieve law, return structured legal analysis |
-| `POST` | `/api/apply` | Submit a case application |
+| `POST` | `/api/analyze-document` | Upload a document (PDF/DOCX/TXT/image) → extract text, classify type, retrieve law, return structured legal analysis |
+| `POST` | `/api/applications` | Submit a case application |
 | `GET` | `/api/applications` | List applications (admin) |
-| `GET` | `/api/analytics` | Dashboard analytics data (admin) |
+| `GET` | `/api/analytics/summary` | Dashboard analytics data (admin) |
 | `POST` | `/api/admin/login` | Admin authentication |
 
 ---
@@ -361,14 +368,14 @@ The application ships with full English and Urdu support. Language is chosen on 
 |---|---|---|
 | `/` | LanguagePicker | Entry screen — choose English or Urdu |
 | `/home` | HomePage | Main legal analysis tool |
-| `/chat` | ChatPage | Full-page multi-turn AI chat |
+| `/chat` | Redirect | Opens `/home`; chat is available in the assistant drawer |
 | `/apply` | ApplyPage | Case application form |
 | `/emergency` | EmergencyPage | Emergency contacts + guidance steps |
 | `/about` | AboutPage | Project information |
 | `/ngos` | NGOPage | NGO directory |
 | `/lawyers` | LawyersPage | Lawyer directory |
 | `/document-analysis` | DocumentAnalysisPage | Upload and AI-analyse a legal document |
-| `/admin` | Admin (protected) | Admin dashboard |
+| `/admin-portal` | Admin (protected) | Admin dashboard |
 
 ---
 
@@ -389,7 +396,7 @@ FAISS cosine-similarity search over law chunks
         ├── Top-K relevant law passages
         │
         ▼
-Groq Llama 3.3 70B
+Groq gpt-oss-120b
   · System prompt with retrieved context
   · Output: category, risk level, rights, next steps
         │
@@ -414,7 +421,7 @@ cd frontend
 npm run build                        # outputs to frontend/dist/
 
 cd ../backend
-uvicorn main:app --host 0.0.0.0 --port 8000 --workers 2
+uvicorn main:app --host 0.0.0.0 --port 8000 --workers 1
 ```
 
 The FastAPI backend serves the built `dist/` static files in production mode.
@@ -476,7 +483,7 @@ uvicorn main:app --reload          # dev mode with auto-reload
 
 # Frontend
 cd frontend
-npm install                        # first time
+npm ci                        # first time
 npm run dev                        # development server (http://localhost:5173)
 npm run build                      # production build
 npm run preview                    # preview production build locally

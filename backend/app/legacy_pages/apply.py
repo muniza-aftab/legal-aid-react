@@ -11,10 +11,10 @@ Clears the pre-fill whenever the analysis changes or is cleared,
 so the form always reflects the current case.
 """
 import streamlit as st
-from utils.translations import T
-from utils.config import PAKISTAN_CITIES
-from utils.application_service import submit_application
-from utils.legal_taxonomy import (
+from app.utils.translations import T
+from app.utils.config import PAKISTAN_CITIES
+from app.utils.application_service import submit_application
+from app.utils.legal_taxonomy import (
     LEGAL_CASE_TYPES as CASE_TYPES,
     URGENCY_LEVELS,
 )

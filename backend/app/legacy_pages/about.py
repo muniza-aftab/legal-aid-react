@@ -1,6 +1,6 @@
 import streamlit as st
-from utils.db import save_feedback
-from utils.translations import T
+from app.utils.db import save_feedback
+from app.utils.translations import T
 
 
 def show() -> None:
@@ -162,7 +162,7 @@ def show() -> None:
     st.subheader(t("about_glance_h"))
 
     try:
-        from utils.rag_engine import index_ready, index_stats
+        from app.utils.rag_engine import index_ready, index_stats
         _idx_ok = index_ready()
         _idx_s  = index_stats() if _idx_ok else {}
     except Exception:

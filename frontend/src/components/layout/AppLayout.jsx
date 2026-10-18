@@ -104,7 +104,7 @@ export default function AppLayout({ children }) {
               <LanguageSelector compact />
               <CitySelector compact />
               <div className="px-2 pt-2 text-[9px] leading-relaxed" style={{ color: isDark ? 'rgba(255,255,255,0.14)' : 'rgba(15,23,42,0.28)' }}>
-                🔒 Private · No data stored · Free to use
+                {t('privacy_note')}
               </div>
             </div>
           </motion.aside>

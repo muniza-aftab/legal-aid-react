@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Routes, Route, useNavigate, Link, useLocation } from 'react-router-dom'
 import { Lock, LayoutDashboard, Building2, Users, BarChart3, Route as RouteIcon, Plus, Pencil, Trash2, X, Check, Search, ToggleLeft, ToggleRight, RefreshCw, Settings2, Eye, Home, LogOut, Sun, Moon } from 'lucide-react'
 import { useAppStore } from '@/services/store'
+import { adminLogout, verifyAdminSession } from '@/services/api'
+import { errorMessage } from '@/services/errors'
 import { adminLogin, getApplicationStats, getApplications, updateApplicationStatus, assignLawyer, assignNGO, getNGOs, getLawyers, createNGO, updateNGO, deleteNGO, deactivateNGO, reactivateNGO, createLawyer, updateLawyer, deleteLawyer, setLawyerAvailability, rerouteApplication } from '@/services/api'
 import { KPICard, Card, SectionHeader, StatusBadge, RiskBadge, Badge, Spinner, Alert } from '@/components/ui/index'
 import {
@@ -783,7 +785,7 @@ function NGOTab() {
       closeModal()
       refresh()
     } catch (e) {
-      setFormError(e.response?.data?.detail || 'Failed to save. Please try again.')
+      setFormError(errorMessage(e, 'Failed to save. Please try again.'))
     } finally {
       setSaving(false)
     }
@@ -791,7 +793,7 @@ function NGOTab() {
 
   const handleDelete = async () => {
     if (!deleteTarget) return
-    try { await deleteNGO(deleteTarget.ngo_id) } catch {}
+    try { await deleteNGO(deleteTarget.ngo_id); setFormError('') } catch (error) { setFormError(errorMessage(error)) }
     setDeleteTarget(null)
     refresh()
   }
@@ -832,6 +834,7 @@ function NGOTab() {
           </button>
         </div>
 
+        {formError && !modal.open && <Alert type="danger" className="mb-4">{formError}</Alert>}
         {/* Table */}
         {loading ? (
           <div className="flex justify-center py-10"><Spinner size={28} /></div>
@@ -1251,7 +1254,7 @@ function LawyersTab() {
       closeModal()
       refresh()
     } catch (e) {
-      setFormError(e.response?.data?.detail || 'Failed to save. Please try again.')
+      setFormError(errorMessage(e, 'Failed to save. Please try again.'))
     } finally {
       setSaving(false)
     }
@@ -1259,7 +1262,7 @@ function LawyersTab() {
 
   const handleDelete = async () => {
     if (!deleteTarget) return
-    try { await deleteLawyer(deleteTarget.lawyer_id) } catch {}
+    try { await deleteLawyer(deleteTarget.lawyer_id); setFormError('') } catch (error) { setFormError(errorMessage(error)) }
     setDeleteTarget(null)
     refresh()
   }
@@ -1298,6 +1301,7 @@ function LawyersTab() {
           </button>
         </div>
 
+        {formError && !modal.open && <Alert type="danger" className="mb-4">{formError}</Alert>}
         {/* Table */}
         {loading ? (
           <div className="flex justify-center py-10"><Spinner size={28} /></div>
@@ -2147,11 +2151,16 @@ export default function AdminPage() {
   const navigate = useNavigate()
   const isDark = theme === 'dark'
 
+  useEffect(() => {
+    if (adminAuthenticated) verifyAdminSession().catch(() => clearAdminAuth())
+  }, [adminAuthenticated, clearAdminAuth])
+
   if (!adminAuthenticated) {
     return <AdminLoginGate onLogin={setAdminAuth} />
   }
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try { await adminLogout() } catch { /* local credentials must still be cleared */ }
     clearAdminAuth()
     navigate('/admin-portal')
   }

@@ -72,7 +72,7 @@ def _cache_path(text: str, language: str, ext: str = "wav") -> str:
 
 def _get_elevenlabs_key() -> str:
     try:
-        from utils.config import ELEVENLABS_API_KEY
+        from app.utils.config import ELEVENLABS_API_KEY
         return ELEVENLABS_API_KEY or ""
     except ImportError:
         return os.getenv("ELEVENLABS_API_KEY", "")
@@ -211,7 +211,7 @@ def _generate_gtts(text: str, language: str, out_path: str) -> bool:
     lang_code = _GTTS_LANG.get(language, "en")
 
     try:
-        tts = _gTTS(text=text.strip(), lang=lang_code, slow=False)
+        tts = _gTTS(text=text.strip(), lang=lang_code, slow=False, timeout=(5, 20))
         os.makedirs(os.path.dirname(out_path), exist_ok=True)
         tts.save(out_path)
 

@@ -17,7 +17,7 @@ import pandas as pd
 import plotly.express as px
 from datetime import datetime
 
-from utils.application_service import (
+from app.utils.application_service import (
     get_all_applications,
     get_stats,
     update_status,
@@ -26,23 +26,23 @@ from utils.application_service import (
     get_routing_explanation,
 )
 
-from utils.legal_taxonomy import (
+from app.utils.legal_taxonomy import (
     LEGAL_CASE_TYPES as CASE_TYPES,
     URGENCY_LEVELS,
     NGO_CATEGORIES,
     LAWYER_EXPERTISE_AREAS,
     EXPERTISE_SUBAREAS,
 )
-from utils.ngo_service import (
+from app.utils.ngo_service import (
     add_ngo, update_ngo, deactivate_ngo, reactivate_ngo,
     get_all_ngos, get_ngo, get_ngo_stats,
 )
-from utils.lawyer_service import (
+from app.utils.lawyer_service import (
     add_lawyer, update_lawyer, set_availability,
     get_all_lawyers, get_lawyer, get_lawyers_for_ngo,
     get_lawyer_stats,
 )
-from utils.config import PAKISTAN_CITIES
+from app.utils.config import PAKISTAN_CITIES
 
 
 # ─────────────────────────────────────────────────────────────────────────────

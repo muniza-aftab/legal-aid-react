@@ -10,6 +10,8 @@ from __future__ import annotations
 import logging
 import os
 import tempfile
+import io
+import zipfile
 from dataclasses import dataclass
 
 from fastapi import UploadFile
@@ -22,6 +24,7 @@ MAX_FILE_BYTES = 10 * 1024 * 1024  # 10 MB
 
 # MIME type → internal file_type token
 _MIME_MAP: dict[str, str] = {
+    "text/plain": "txt",
     "application/pdf":                                                          "pdf",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document":  "docx",
     "image/png":  "image",
@@ -31,6 +34,7 @@ _MIME_MAP: dict[str, str] = {
 
 # Extension → internal file_type token (fallback when MIME is generic/missing)
 _EXT_MAP: dict[str, str] = {
+    ".txt": "txt",
     ".pdf":  "pdf",
     ".docx": "docx",
     ".png":  "image",
@@ -41,6 +45,7 @@ _EXT_MAP: dict[str, str] = {
 # Internal file_type → temp-file suffix used when saving
 # Images keep their original extension so Pillow can detect format correctly.
 _DEFAULT_SUFFIX: dict[str, str] = {
+    "txt": ".txt",
     "pdf":  ".pdf",
     "docx": ".docx",
     "image": ".png",  # overridden per actual extension below
@@ -101,11 +106,7 @@ def _check_magic_bytes(data: bytes, file_type: str, filename: str) -> None:
         if data[:len(sig)] == sig:
             return  # signature matched — all good
 
-    logger.warning(
-        "Magic-byte mismatch: file='%s' declared_type='%s' header=%s — "
-        "possible corruption or extension spoofing",
-        filename, file_type, data[:8].hex(),
-    )
+    raise ValueError("The file contents do not match the selected file type. Please upload an uncorrupted document.")
 
 
 # ── Public API ────────────────────────────────────────────────────────────────
@@ -125,11 +126,11 @@ async def load_upload(upload: UploadFile) -> TempDocument:
         ext = os.path.splitext(filename)[1] or content_type
         raise ValueError(
             f"Unsupported file type '{ext}'. "
-            "Please upload a PDF, DOCX, PNG, or JPG file."
+            "Please upload a PDF, DOCX, TXT, PNG, or JPG file."
         )
 
     # ── Read bytes ────────────────────────────────────────────────────────────
-    data = await upload.read()
+    data = await upload.read(MAX_FILE_BYTES + 1)
     size_bytes = len(data)
 
     if size_bytes == 0:
@@ -143,6 +144,16 @@ async def load_upload(upload: UploadFile) -> TempDocument:
 
     # ── Magic bytes validation ─────────────────────────────────────────────────
     _check_magic_bytes(data, file_type, filename)
+    if file_type == "docx":
+        try:
+            with zipfile.ZipFile(io.BytesIO(data)) as archive:
+                entries = archive.infolist()
+                if len(entries) > 2000 or sum(item.file_size for item in entries) > 100 * 1024 * 1024:
+                    raise ValueError("This DOCX expands beyond the document processing limit.")
+                if "word/document.xml" not in archive.namelist():
+                    raise ValueError("The uploaded archive is not a Word document.")
+        except zipfile.BadZipFile as exc:
+            raise ValueError("The DOCX file is damaged.") from exc
 
     # ── Write to temp file ────────────────────────────────────────────────────
     # Use the original extension for images so Pillow can detect format.

@@ -8,7 +8,7 @@ Translations live in:
 Adding a new language = create locales/<code>.json, add to LANGUAGE_CODES.
 
 Usage (unchanged — all existing call sites work as-is):
-    from utils.translations import T
+    from app.utils.translations import T
     t = T("Urdu")
     t("analyze_btn")             # → "🔍  کیس تجزیہ کریں"
     t("char_counter", count=42)  # → "42/2000 حروف"

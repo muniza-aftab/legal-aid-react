@@ -1,10 +1,18 @@
 import axios from 'axios'
+import { useAppStore } from './store'
 
-const BASE = import.meta.env.VITE_API_URL || ''
+const BASE = (import.meta.env.VITE_API_URL || '').trim().replace(/\/+$/, '').replace(/\/api$/, '')
 
 export const api = axios.create({
   baseURL: BASE,
-  timeout: 60000,
+  timeout: 150000,
+})
+
+api.interceptors.response.use(response => response, error => {
+  if (error.response?.status === 401 && error.config?.headers?.['X-Admin-Token'] && !error.config?.url?.startsWith('/api/chat')) {
+    useAppStore.getState().clearAdminAuth()
+  }
+  return Promise.reject(error)
 })
 
 // Add admin token to requests
@@ -22,11 +30,34 @@ export const analyzeCase = (query, language = 'English', city = '') =>
   api.post('/api/analyze', { query, language, city }).then(r => r.data)
 
 // ── Chat ──────────────────────────────────────────────────────────────────────
-export const sendChatMessage = (sessionId, message, language, caseContext = {}) =>
-  api.post('/api/chat', { session_id: sessionId, message, language, case_context: caseContext }).then(r => r.data)
+let pendingChatSession = null
+async function chatSession() {
+  const state = useAppStore.getState()
+  if (state.chatSessionId && state.chatSessionToken) return { session_id: state.chatSessionId, token: state.chatSessionToken }
+  if (!pendingChatSession) {
+    pendingChatSession = api.post('/api/chat/sessions').then(({ data }) => {
+      useAppStore.getState().setChatSession(data.session_id, data.token)
+      return data
+    }).finally(() => { pendingChatSession = null })
+  }
+  return pendingChatSession
+}
+
+export const sendChatMessage = async (_sessionId, message, language, caseContext = {}) => {
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const session = await chatSession()
+    try {
+      return await api.post('/api/chat', { session_id: session.session_id, message, language, case_context: caseContext },
+        { headers: { 'X-Chat-Token': session.token } }).then(r => r.data)
+    } catch (error) {
+      if (attempt === 0 && error.response?.status === 401) useAppStore.getState().setChatSession(null, null)
+      else throw error
+    }
+  }
+}
 
 export const clearChatSession = (sessionId) =>
-  api.delete(`/api/chat/${sessionId}`).then(r => r.data)
+  api.delete(`/api/chat/${sessionId}`, { headers: { 'X-Chat-Token': useAppStore.getState().chatSessionToken } }).then(r => r.data)
 
 // ── Applications ──────────────────────────────────────────────────────────────
 export const submitApplication = (data) =>
@@ -105,7 +136,8 @@ export const downloadPDF = (analysisData, language) =>
 // ── Transcription ─────────────────────────────────────────────────────────────
 export const transcribeAudio = (audioBlob, language) => {
   const form = new FormData()
-  form.append('audio', audioBlob, 'recording.wav')
+  const extension = audioBlob.type?.includes('mp4') ? 'mp4' : audioBlob.type?.includes('webm') ? 'webm' : 'wav'
+  form.append('audio', audioBlob, `recording.${extension}`)
   form.append('language', language)
   return api.post('/api/transcribe', form, {
     headers: { 'Content-Type': 'multipart/form-data' },
@@ -123,6 +155,9 @@ export const getRoutingPreview = (city, caseType, urgency = 'Medium') =>
 export const adminLogin = (password) =>
   api.post('/api/admin/login', { password }).then(r => r.data)
 
+export const adminLogout = () => api.post('/api/admin/logout').then(r => r.data)
+export const verifyAdminSession = () => api.get('/api/admin/session').then(r => r.data)
+
 // ── Health ────────────────────────────────────────────────────────────────────
-export const checkHealth = () =>
-  api.get('/api/health').then(r => r.data)
+export const checkHealth = (options = {}) =>
+  api.get('/api/health', options).then(r => r.data)

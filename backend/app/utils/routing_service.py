@@ -103,10 +103,10 @@ def get_candidate_ngos(city: str, case_type: str) -> list[dict]:
     City is a HARD requirement — only same-city NGOs are considered.
     Each dict has an extra `_score` key.
     """
-    from utils.ngo_service import get_all_ngos
+    from app.utils.ngo_service import get_all_ngos
     candidates = []
     for ngo in get_all_ngos(active_only=True):
-        if city and ngo.get("city", "").lower() != city.lower():
+        if city and ngo.get("city", "").lower() not in {city.lower(), "nationwide"}:
             continue
         cats = _ngo_categories(ngo)
         if case_type not in cats and not ngo.get("handles_all_cases"):
@@ -126,7 +126,7 @@ def get_candidate_lawyers(
     City is a HARD requirement — only same-city lawyers are considered.
     Each dict has an extra `_score` key.
     """
-    from utils.lawyer_service import get_all_lawyers
+    from app.utils.lawyer_service import get_all_lawyers
     candidates = []
     for lawyer in get_all_lawyers():
         if lawyer.get("expertise_main", "") != case_type:

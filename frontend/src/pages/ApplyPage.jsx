@@ -19,6 +19,7 @@ const schema = z.object({
   case_type:   z.string().min(1, 'Case type is required'),
   urgency:     z.string().min(1, 'Urgency is required'),
   description: z.string().min(30, 'Please provide at least 30 characters'),
+  consent:     z.literal(true, { errorMap: () => ({ message: 'Please consent to storing and routing your application.' }) }),
 })
 
 // Must exactly match backend LEGAL_CASE_TYPES from utils/legal_taxonomy.py
@@ -114,35 +115,35 @@ export default function ApplyPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {/* Name */}
             <div>
-              <label className="label">{t('form_name')} *</label>
-              <input {...register('full_name')} className="input" placeholder={t('form_ph_name')} />
+              <label htmlFor="full_name" className="label">{t('form_name')} *</label>
+              <input id="full_name" {...register('full_name')} className="input" placeholder={t('form_ph_name')} />
               {errors.full_name && <FieldError msg={errors.full_name.message} />}
             </div>
 
             {/* CNIC */}
             <div>
-              <label className="label">{t('form_cnic')}</label>
-              <input {...register('cnic')} className="input" placeholder={t('form_ph_cnic')} />
+              <label htmlFor="cnic" className="label">{t('form_cnic')}</label>
+              <input id="cnic" {...register('cnic')} className="input" placeholder={t('form_ph_cnic')} />
             </div>
 
             {/* Phone */}
             <div>
-              <label className="label">{t('form_phone')} *</label>
-              <input {...register('phone')} className="input" placeholder={t('form_ph_phone')} />
+              <label htmlFor="phone" className="label">{t('form_phone')} *</label>
+              <input id="phone" {...register('phone')} className="input" placeholder={t('form_ph_phone')} />
               {errors.phone && <FieldError msg={errors.phone.message} />}
             </div>
 
             {/* Email */}
             <div>
-              <label className="label">{t('form_email')}</label>
-              <input {...register('email')} className="input" placeholder={t('form_ph_email')} type="email" />
+              <label htmlFor="email" className="label">{t('form_email')}</label>
+              <input id="email" {...register('email')} className="input" placeholder={t('form_ph_email')} type="email" />
               {errors.email && <FieldError msg={errors.email.message} />}
             </div>
 
             {/* City */}
             <div>
-              <label className="label">{t('form_city')} *</label>
-              <select {...register('city')} className="input">
+              <label htmlFor="city" className="label">{t('form_city')} *</label>
+              <select id="city" {...register('city')} className="input">
                 <option value="">{t('form_select_city')}</option>
                 {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
@@ -152,7 +153,7 @@ export default function ApplyPage() {
             {/* Case Type */}
             <div>
               <label className="label">{t('form_casetype')} *</label>
-              <select {...register('case_type')} className="input">
+              <select id="case_type" {...register('case_type')} className="input">
                 <option value="">{t('form_select_type')}</option>
                 {CASE_TYPES.map(c => <option key={c} value={c}>{translateCategory(c, language)}</option>)}
               </select>
@@ -225,9 +226,9 @@ export default function ApplyPage() {
 
           {/* Description */}
           <div>
-            <label className="label">{t('form_desc')} *</label>
+            <label htmlFor="description" className="label">{t('form_desc')} *</label>
             <textarea
-              {...register('description')}
+              id="description" {...register('description')}
               rows={5}
               className="input resize-none"
               placeholder={t('form_ph_desc')}
@@ -237,6 +238,12 @@ export default function ApplyPage() {
           </div>
 
           {serverError && <Alert type="danger">⚠️ {serverError}</Alert>}
+
+          <label className="flex items-start gap-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
+            <input type="checkbox" {...register('consent')} className="mt-1" />
+            <span>{t('apply_consent')}</span>
+          </label>
+          {errors.consent && <FieldError msg={t('apply_consent_required')} />}
 
           <button type="submit" disabled={loading} className="btn-primary w-full py-3 justify-center">
             {loading ? <Spinner size={18} /> : null}

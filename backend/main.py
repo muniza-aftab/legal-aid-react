@@ -12,21 +12,23 @@ import re as _re
 import sys
 import time
 import uuid
-from typing import Optional, List
+from typing import Optional, List, Literal
+from pathlib import Path
 
 # Ensure backend app is on path
 ROOT = os.path.dirname(os.path.abspath(__file__))
 APP  = os.path.join(ROOT, "app")
-for p in [ROOT, APP]:
+for p in [ROOT]:
     if p not in sys.path:
         sys.path.insert(0, p)
 
 os.environ.setdefault("TRANSFORMERS_VERBOSITY", "error")
 logging.getLogger("transformers").setLevel(logging.ERROR)
 
-from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Query
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Query, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
+from starlette.background import BackgroundTask
 from pydantic import BaseModel, Field, field_validator
 import logging
 
@@ -51,11 +53,15 @@ from app.utils.db import init_db
 from app.utils.application_service import init_applications_table
 init_db()
 init_applications_table()
+from app.utils.auth import (
+    init_auth, enforce_access, check_password, issue_session, revoke_session, require_chat_session,
+)
+init_auth()
 
 # ── Import services ────────────────────────────────────────────────────────────
 from app.utils.config import (
     GROQ_API_KEY, ELEVENLABS_API_KEY, APP_TITLE, APP_VERSION,
-    PAKISTAN_CITIES, LANGUAGES, DISCLAIMER, EMERGENCY_CONTACTS,
+    PAKISTAN_CITIES, LANGUAGES, DISCLAIMER, EMERGENCY_CONTACTS, CORS_ORIGINS, GROQ_API_KEYS,
 )
 from app.utils.groq_client import (
     analyze_with_rag, LegalAnalysis, transcribe_audio,
@@ -107,31 +113,41 @@ app = FastAPI(
     version="1.0.0",
     docs_url="/api/docs",
     redoc_url="/api/redoc",
+    dependencies=[Depends(enforce_access)],
 )
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "https://legal-aid-react-gvvenv4go-muniza-aftab-s-projects.vercel.app", "https://legal-aid-react.vercel.app", "http://localhost:3000", "*"],
-    allow_credentials=True,
+    allow_origins=CORS_ORIGINS,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 
+_rag_warmup_task = None
+_rag_loaded = False
+
+def _load_rag() -> None:
+    global _rag_loaded
+    get_model()
+    index_stats()
+    _rag_loaded = index_ready()
+
 @app.on_event("startup")
 async def _warmup_rag() -> None:
     """
-    The embedding model and FAISS index are normally loaded lazily on first
-    use, which makes whichever request happens to arrive first pay a multi-
-    second loading cost synchronously. Load them here instead, before the
-    server starts accepting traffic, so every request is fast from the start.
+    Warm the model and index in the background so configuration and emergency
+    pages remain available. Health reports warming_up until retrieval is ready.
     """
-    try:
-        get_model()
-        index_stats()
-        logger.info("RAG warmup complete — embedding model and FAISS index pre-loaded.")
-    except Exception as e:
-        logger.warning(f"RAG warmup skipped (will lazy-load on first request instead): {e}")
+    global _rag_warmup_task
+    async def warm():
+        try:
+            await asyncio.to_thread(_load_rag)
+            logger.info("RAG warmup complete.")
+        except Exception as exc:
+            logger.warning("RAG warmup failed: %s", exc)
+    _rag_warmup_task = asyncio.create_task(warm())
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -140,14 +156,25 @@ async def _warmup_rag() -> None:
 
 class AnalyzeRequest(BaseModel):
     query: str = Field(..., min_length=1, max_length=2000)
-    language: str = Field(default="English")
-    city: str = Field(default="")
+    language: Literal["English", "Urdu"] = "English"
+    city: str = Field(default="", max_length=80)
 
 class ChatRequest(BaseModel):
     session_id: str = Field(..., min_length=1, max_length=128)
     message: str    = Field(..., min_length=1, max_length=2000)
-    language: str   = Field(default="English")
+    language: Literal["English", "Urdu"] = "English"
     case_context: dict = Field(default_factory=dict)
+
+    @field_validator("case_context")
+    @classmethod
+    def validate_context(cls, value):
+        selected = {}
+        for key in ("category", "risk_level", "summary", "last_query"):
+            item = value.get(key, "")
+            if not isinstance(item, str) or len(item) > 6000:
+                raise ValueError("Invalid case context")
+            selected[key] = item
+        return selected
 
     @field_validator("session_id")
     @classmethod
@@ -158,23 +185,24 @@ class ChatRequest(BaseModel):
         return v
 
 class FeedbackRequest(BaseModel):
-    session_id: str
-    rating: int  # 1-5
-    comment: str = ""
+    session_id: str = Field(default="", max_length=128)
+    rating: int = Field(ge=1, le=5)
+    comment: str = Field(default="", max_length=2000)
 
 class ApplicationRequest(BaseModel):
-    full_name: str
-    cnic: str = ""
-    phone: str = ""
-    email: str = ""
-    city: str = ""
+    full_name: str = Field(min_length=2, max_length=120)
+    cnic: str = Field(default="", max_length=20)
+    phone: str = Field(min_length=7, max_length=32)
+    email: str = Field(default="", max_length=254)
+    city: str = Field(min_length=1, max_length=80)
     case_type: str
     urgency: str
-    description: str
-    language: str = "English"
+    description: str = Field(min_length=30, max_length=10000)
+    language: Literal["English", "Urdu"] = "English"
+    consent: bool = False
 
 class StatusUpdateRequest(BaseModel):
-    status: str
+    status: Literal["pending", "in_review", "assigned", "resolved", "closed"]
 
 class AssignLawyerRequest(BaseModel):
     lawyer_id: str
@@ -187,7 +215,7 @@ class NGOCreateRequest(BaseModel):
     city: str = ""
     contact: str = ""
     email: str = ""
-    categories: List[str] = []
+    categories: List[str] = Field(default_factory=list)
     handles_all_cases: bool = False
     active: bool = True
 
@@ -196,11 +224,30 @@ class LawyerCreateRequest(BaseModel):
     bar_license: str
     city: str
     expertise_main: str
+    expertise_sub: List[str] = Field(default_factory=list)
     ngo_id: str = ""
     available: bool = True
 
 class SetAvailabilityRequest(BaseModel):
     available: bool
+
+class AdminLoginRequest(BaseModel):
+    password: str = Field(min_length=1, max_length=256)
+
+class TTSRequest(BaseModel):
+    text: str = Field(min_length=1, max_length=12000)
+    language: Literal["English", "Urdu"] = "English"
+
+class ExportRequest(BaseModel):
+    language: Literal["English", "Urdu"] = "English"
+    summary: str = Field(default="", max_length=20000)
+    category: str = Field(default="", max_length=100)
+    risk_level: str = Field(default="Medium", max_length=20)
+    risk_reason: str = Field(default="", max_length=2000)
+    confidence: str = Field(default="Low", max_length=20)
+    laws: List[str] = Field(default_factory=list, max_length=30)
+    rights: List[str] = Field(default_factory=list, max_length=30)
+    next_steps: List[str] = Field(default_factory=list, max_length=30)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -211,8 +258,9 @@ class SetAvailabilityRequest(BaseModel):
 async def health():
     return {
         "status": "ok",
-        "rag_ready": index_ready(),
-        "groq_ready": bool(GROQ_API_KEY),
+        "rag_ready": index_ready() and _rag_loaded,
+        "warming_up": bool(_rag_warmup_task and not _rag_warmup_task.done()),
+        "groq_ready": bool(GROQ_API_KEYS),
         "tts_ready": tts_available(),
         "timestamp": time.time(),
         "version": APP_VERSION,
@@ -273,6 +321,7 @@ async def analyze(req: AnalyzeRequest):
             risk_level=result.risk_level,
             ai_summary=result.summary[:300] if result.summary else "",
             voice_used=False,
+            city=req.city,
         )
     except Exception:
         pass
@@ -310,7 +359,7 @@ async def analyze(req: AnalyzeRequest):
                 "text": c.get("text", "")[:400],
                 "score": c.get("score", 0),
             }
-            for c in (chunks or [])
+            for c in (result.sources or [])
         ] if result.laws else [],
         "ngos": ngo_list,
         "urgent_helplines": urgent or [],
@@ -321,8 +370,13 @@ async def analyze(req: AnalyzeRequest):
 # CHAT (multi-turn RAG)
 # ═══════════════════════════════════════════════════════════════════════════════
 
+@app.post("/api/chat/sessions")
+async def new_chat_session():
+    return issue_session("chat")
+
 @app.post("/api/chat")
-async def chat(req: ChatRequest):
+async def chat(req: ChatRequest, request: Request):
+    require_chat_session(request, req.session_id)
     if not index_ready():
         raise HTTPException(status_code=503, detail="RAG index not ready.")
 
@@ -353,12 +407,15 @@ async def chat(req: ChatRequest):
     }
 
 @app.delete("/api/chat/{session_id}")
-async def clear_chat(session_id: str):
+async def clear_chat(session_id: str, request: Request):
+    require_chat_session(request, session_id)
     clear_session(session_id)
+    revoke_session(request.headers.get("X-Chat-Token", ""))
     return {"cleared": True, "session_id": session_id}
 
 @app.get("/api/chat/{session_id}/history")
-async def chat_history(session_id: str, turns: int = Query(default=10, le=50)):
+async def chat_history(session_id: str, request: Request, turns: int = Query(default=10, ge=1, le=50)):
+    require_chat_session(request, session_id)
     history = get_recent_history(session_id, n=turns)
     return {"session_id": session_id, "history": history}
 
@@ -372,8 +429,12 @@ async def transcribe(
     audio: UploadFile = File(...),
     language: str = Form(default="English"),
 ):
-    audio_bytes = await audio.read()
-    text, error = transcribe_audio(audio_bytes, language=language)
+    audio_bytes = await audio.read(25 * 1024 * 1024 + 1)
+    if len(audio_bytes) > 25 * 1024 * 1024:
+        raise HTTPException(413, "Audio exceeds the 25 MB limit.")
+    if language not in LANGUAGES:
+        raise HTTPException(422, "Unsupported language")
+    text, error = await asyncio.to_thread(transcribe_audio, audio_bytes, language=language)
     if error:
         raise HTTPException(status_code=500, detail=error)
     return {"text": text, "language": language}
@@ -384,9 +445,9 @@ async def transcribe(
 # ═══════════════════════════════════════════════════════════════════════════════
 
 @app.post("/api/tts")
-async def tts(body: dict):
-    text = body.get("text", "")
-    language = body.get("language", "English")
+async def tts(body: TTSRequest):
+    text = body.text
+    language = body.language
     if not text:
         raise HTTPException(status_code=422, detail="text is required")
     if not tts_available():
@@ -399,7 +460,9 @@ async def tts(body: dict):
     path = await loop.run_in_executor(None, generate_tts, text, language)
     if not path:
         raise HTTPException(status_code=500, detail="TTS generation failed")
-    return FileResponse(path, media_type="audio/mpeg", filename="speech.mp3")
+    suffix = Path(path).suffix.lower()
+    return FileResponse(path, media_type="audio/wav" if suffix == ".wav" else "audio/mpeg",
+                        filename=f"speech{suffix}")
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -407,8 +470,9 @@ async def tts(body: dict):
 # ═══════════════════════════════════════════════════════════════════════════════
 
 @app.post("/api/pdf")
-async def generate_pdf(body: dict):
+async def generate_pdf(body: ExportRequest):
     """Generate a case PDF from analysis result data."""
+    body = body.model_dump()
     language = body.get("language", "English")
     # Reconstruct LegalAnalysis from dict
     result = LegalAnalysis(
@@ -421,10 +485,11 @@ async def generate_pdf(body: dict):
         rights=body.get("rights", []),
         next_steps=body.get("next_steps", []),
     )
-    path = generate_case_pdf(result, language)
+    path = await asyncio.to_thread(generate_case_pdf, result, language)
     if not path:
         raise HTTPException(status_code=500, detail="PDF generation failed")
-    return FileResponse(path, media_type="application/pdf", filename="legal_report.pdf")
+    return FileResponse(path, media_type="application/pdf", filename="legal_report.pdf",
+                        background=BackgroundTask(cleanup_temp, path))
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -433,6 +498,8 @@ async def generate_pdf(body: dict):
 
 @app.post("/api/applications")
 async def create_application(req: ApplicationRequest):
+    if not req.consent:
+        raise HTTPException(422, "Consent is required to store and route your application.")
     # Map Pydantic field names → the names submit_application() expects
     data = {
         "name":        req.full_name.strip(),
@@ -444,6 +511,7 @@ async def create_application(req: ApplicationRequest):
         "urgency":     req.urgency.strip(),
         "description": req.description.strip(),
         "language":    req.language,
+        "consent":     req.consent,
     }
     try:
         application = submit_application(data)
@@ -461,14 +529,16 @@ async def list_applications(
     case_type: str = Query(default=""),
     urgency: str = Query(default=""),
     city: str = Query(default=""),
-    limit: int = Query(default=100),
-    offset: int = Query(default=0),
+    limit: int = Query(default=100, ge=1, le=1000),
+    offset: int = Query(default=0, ge=0),
 ):
     apps = get_all_applications(
         filter_status=status or None,
         filter_case_type=case_type or None,
         filter_urgency=urgency or None,
     )
+    if city:
+        apps = [record for record in apps if record.get("city", "").casefold() == city.casefold()]
     total = len(apps)
     apps = apps[offset: offset + limit] if limit else apps
     return {"applications": apps, "total": total}
@@ -493,21 +563,30 @@ async def update_application_status(app_id: str, req: StatusUpdateRequest):
 
 @app.patch("/api/applications/{app_id}/lawyer")
 async def assign_application_lawyer(app_id: str, req: AssignLawyerRequest):
-    ok = assign_lawyer(app_id, req.lawyer_id)
+    try:
+        ok = assign_lawyer(app_id, req.lawyer_id)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc))
     if not ok:
         raise HTTPException(status_code=404, detail="Assignment failed")
     return {"assigned": True}
 
 @app.patch("/api/applications/{app_id}/ngo")
 async def assign_application_ngo(app_id: str, req: AssignNGORequest):
-    ok = assign_ngo(app_id, req.ngo_id)
+    try:
+        ok = assign_ngo(app_id, req.ngo_id)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc))
     if not ok:
         raise HTTPException(status_code=404, detail="Assignment failed")
     return {"assigned": True}
 
 @app.get("/api/applications/{app_id}/routing")
 async def application_routing(app_id: str):
-    return get_routing_explanation(app_id)
+    try:
+        return get_routing_explanation(app_id)
+    except ValueError as exc:
+        raise HTTPException(404, str(exc))
 
 @app.post("/api/applications/{app_id}/reroute")
 async def reroute_application_endpoint(app_id: str):
@@ -537,8 +616,10 @@ async def routing_preview(
 # ═══════════════════════════════════════════════════════════════════════════════
 
 @app.get("/api/ngos")
-async def list_ngos(city: str = Query(default=""), category: str = Query(default="")):
-    ngos = get_all_ngos(city_filter=city or None, category_filter=category or None)
+async def list_ngos(request: Request, city: str = Query(default=""), category: str = Query(default="")):
+    from app.utils.auth import verify_session
+    is_admin = verify_session(request.headers.get("X-Admin-Token", ""), "admin")
+    ngos = get_all_ngos(active_only=not is_admin, city_filter=city or None, category_filter=category or None)
     return {"ngos": ngos, "total": len(ngos)}
 
 @app.get("/api/ngos/stats")
@@ -593,7 +674,10 @@ async def update_ngo_detail(ngo_id: str, req: NGOCreateRequest):
 
 @app.delete("/api/ngos/{ngo_id}")
 async def delete_ngo_endpoint(ngo_id: str):
-    ok = delete_ngo(ngo_id)
+    try:
+        ok = delete_ngo(ngo_id)
+    except ValueError as exc:
+        raise HTTPException(409, str(exc))
     if not ok:
         raise HTTPException(status_code=404, detail="NGO not found")
     return {"deleted": True}
@@ -652,7 +736,10 @@ async def update_lawyer_detail(lawyer_id: str, req: LawyerCreateRequest):
 
 @app.delete("/api/lawyers/{lawyer_id}")
 async def delete_lawyer_endpoint(lawyer_id: str):
-    ok = delete_lawyer(lawyer_id)
+    try:
+        ok = delete_lawyer(lawyer_id)
+    except ValueError as exc:
+        raise HTTPException(409, str(exc))
     if not ok:
         raise HTTPException(status_code=404, detail="Lawyer not found")
     return {"deleted": True}
@@ -668,7 +755,7 @@ async def set_lawyer_availability(lawyer_id: str, req: SetAvailabilityRequest):
 # ═══════════════════════════════════════════════════════════════════════════════
 
 @app.get("/api/analytics/queries")
-async def analytics_queries(limit: int = Query(default=500)):
+async def analytics_queries(limit: int = Query(default=500, ge=1, le=1000)):
     logs = fetch_all_logs()
     return {"logs": logs[:limit], "total": len(logs)}
 
@@ -712,12 +799,19 @@ async def submit_feedback(req: FeedbackRequest):
 # ═══════════════════════════════════════════════════════════════════════════════
 
 @app.post("/api/admin/login")
-async def admin_login(body: dict):
-    password = body.get("password", "")
-    expected = os.getenv("ADMIN_PASSWORD", "admin123")
-    if password == expected:
-        return {"authenticated": True, "token": "admin-session-" + str(uuid.uuid4())}
+async def admin_login(body: AdminLoginRequest):
+    if check_password(body.password):
+        return {"authenticated": True, **issue_session("admin")}
     raise HTTPException(status_code=401, detail="Invalid password")
+
+@app.get("/api/admin/session")
+async def admin_session():
+    return {"authenticated": True}
+
+@app.post("/api/admin/logout")
+async def admin_logout(request: Request):
+    revoke_session(request.headers.get("X-Admin-Token", ""))
+    return {"authenticated": False}
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -844,13 +938,19 @@ async def analyze_document(
             "confidence":          doc_analysis.confidence,
             "disclaimer":          doc_analysis.disclaimer,
             "error":               doc_analysis.error,
+            "coverage": {
+                "analyzed_characters": doc_analysis.analyzed_characters,
+                "total_characters": doc_analysis.total_characters,
+                "segments_analyzed": doc_analysis.segments_analyzed,
+                "truncated": doc_analysis.truncated,
+            },
         }
 
     return {
         "filename":                  doc.filename,
         "file_type":                 doc.file_type,
         "size_bytes":                doc.size_bytes,
-        "extracted_text":            result.text,
+        "extracted_text":            clean_text,
         "detected_language":         result.detected_language,
         "extraction_confidence":     round(result.extraction_confidence, 3),
         "char_count":                result.char_count,
@@ -867,7 +967,23 @@ async def analyze_document(
     }
 
 
+_FRONTEND_DIST = Path(ROOT).parent / "frontend" / "dist"
+
+@app.get("/{path:path}", include_in_schema=False)
+async def frontend(path: str):
+    """Serve the optional local production build, including React deep links."""
+    if path == "api" or path.startswith("api/") or not (_FRONTEND_DIST / "index.html").is_file():
+        raise HTTPException(404, "Not found")
+    root = _FRONTEND_DIST.resolve()
+    candidate = (root / path).resolve()
+    if candidate.is_relative_to(root) and candidate.is_file():
+        return FileResponse(candidate)
+    if Path(path).suffix:
+        raise HTTPException(404, "Not found")
+    return FileResponse(root / "index.html", headers={"Cache-Control": "no-cache"})
+
+
 # ── Dev entrypoint ─────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("main:app", host="127.0.0.1", port=int(os.getenv("PORT", "8000")), reload=True)

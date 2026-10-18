@@ -257,8 +257,8 @@ def _classify_llm(text: str) -> tuple[str, float]:
     Imports Groq client dynamically so this module never hard-fails without key.
     """
     try:
-        from utils.config import GROQ_API_KEY, GROQ_FAST_MODEL  # local import
-        from utils.groq_client import call_groq_with_rotation
+        from app.utils.config import GROQ_API_KEY, GROQ_FAST_MODEL  # local import
+        from app.utils.groq_client import call_groq_with_rotation
     except ImportError as exc:
         logger.debug("Groq SDK not available for LLM classification: %s", exc)
         return "Unknown", 0.0

@@ -16,11 +16,17 @@ APP_EMOJI    = "⚖️"
 
 # ── Paths ──────────────────────────────────────────────────────────────────────
 BASE_DIR      = _BASE
-DB_PATH       = os.path.join(BASE_DIR, "database.db")
+DB_PATH       = os.path.abspath(os.getenv("DATABASE_PATH", os.path.join(BASE_DIR, "database.db")))
 NGO_FILE      = os.path.join(BASE_DIR, "data", "ngos.json")
-LAWS_DIR      = os.path.join(BASE_DIR, "data", "laws")
+LAWS_DIR      = os.path.join(BASE_DIR, "data", "Laws")
 FAISS_DIR     = os.path.join(BASE_DIR, "data", "faiss_index")
 CHUNKS_FILE   = os.path.join(BASE_DIR, "data", "chunks.json")
+
+CORS_ORIGINS = [origin.strip().rstrip("/") for origin in os.getenv(
+    "CORS_ORIGINS",
+    "http://localhost:5173,http://127.0.0.1:5173,http://localhost:4173,"
+    "http://127.0.0.1:4173,https://legal-aid-react.vercel.app",
+).split(",") if origin.strip() and origin.strip() != "*"]
 
 # ── API Keys ───────────────────────────────────────────────────────────────────
 GROQ_API_KEY:       str = os.getenv("GROQ_API_KEY", "")
@@ -53,9 +59,9 @@ def _load_groq_api_keys() -> list[str]:
 GROQ_API_KEYS: list[str] = _load_groq_api_keys()
 
 # ── Groq Model Config ─────────────────────────────────────────────────────────
-GROQ_LLM_MODEL    = "llama-3.3-70b-versatile"   # Main reasoning model
-GROQ_FAST_MODEL   = "llama-3.1-8b-instant"       # Fallback / fast responses
-GROQ_WHISPER_MODEL = "whisper-large-v3-turbo"     # Voice transcription
+GROQ_LLM_MODEL    = os.getenv("GROQ_LLM_MODEL", "openai/gpt-oss-120b")
+GROQ_FAST_MODEL   = os.getenv("GROQ_FAST_MODEL", "openai/gpt-oss-20b")
+GROQ_WHISPER_MODEL = os.getenv("GROQ_WHISPER_MODEL", "whisper-large-v3-turbo")
 
 # ── RAG Config ────────────────────────────────────────────────────────────────
 # EMBED_MODEL       = "intfloat/multilingual-e5-base"  # Sentence-transformers model (fast, free)
@@ -73,13 +79,13 @@ MIN_QUERY_LENGTH: int = int(os.getenv("MIN_QUERY_LENGTH", "15"))
 LANGUAGES = ["English", "Urdu"]
 
 # ── Legal Categories ──────────────────────────────────────────────────────────
-from utils.legal_taxonomy import LEGAL_CASE_TYPES
+from app.utils.legal_taxonomy import LEGAL_CASE_TYPES
 
 LEGAL_CATEGORIES = LEGAL_CASE_TYPES
 
 # ── PDF Folder → Category mapping ────────────────────────────────────────────
 FOLDER_CATEGORY_MAP = {
-    "Civil": "Civil Law",
+    "Civil": "Civil Law / Procedure",
     "Family": "Family Law",
     "Labour": "Labour Law",
     "Criminal": "Criminal Law",
@@ -93,6 +99,7 @@ FILENAME_CATEGORY_MAP = {
     "PAKISTAN PENAL CODE":              "Criminal Law",
     "CODE OF CRIMINAL PROCEDURE":       "Criminal Law",
     "CONSTITUTION":                     "Constitutional Law",
+    "SUCCESSION":                       "Inheritance Law",
     "CONTRACT ACT":                     "Contract Law",
     "TRANSFER OF PROPERTY":             "Property Law",
     "SPECIFIC RELIEF":                  "Civil Law / Procedure",

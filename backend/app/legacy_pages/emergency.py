@@ -1,7 +1,7 @@
 import streamlit as st
 import json
-from utils.config import EMERGENCY_CONTACTS, NGO_FILE
-from utils.translations import T
+from app.utils.config import EMERGENCY_CONTACTS, NGO_FILE
+from app.utils.translations import T
 
 
 def show() -> None:

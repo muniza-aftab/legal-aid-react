@@ -37,7 +37,7 @@ from typing import Iterable
 
 import numpy as np
 
-from utils.config import BASE_DIR, EMBED_MODEL
+from app.utils.config import BASE_DIR, EMBED_MODEL
 
 logger = logging.getLogger(__name__)
 

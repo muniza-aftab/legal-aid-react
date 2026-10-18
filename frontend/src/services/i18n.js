@@ -22,6 +22,10 @@ export const translateCategory = (name, language) =>
 
 const strings = {
   English: {
+    privacy_note: 'Case applications are stored for review. AI and speech features use external providers.',
+    apply_consent: 'I agree to storing my application and sharing it with the assigned legal support team.',
+    apply_consent_required: 'Your consent is required to submit the application.',
+    err_max_chars: 'Please keep your query within 2,000 characters.',
     // ── Nav ─────────────────────────────────────────────────────────────────
     nav_home:      'Home',
     nav_chat:      'Chat Assistant',
@@ -123,7 +127,7 @@ const strings = {
     form_ph_desc:        'Please describe your legal situation in detail…',
     form_select_city:    'Select city…',
     form_select_type:    'Select type…',
-    apply_info:          'Your information is kept private and will only be shared with assigned NGOs/lawyers with your consent.',
+    apply_info:          'Submitting this form stores your contact and case details for administrator review and assignment. Only include information needed for your application.',
     apply_autodetected:  'Auto-detected from your analysis',
     apply_success_title: 'Application Submitted',
     apply_success_body:  'Your case has been submitted and will be reviewed shortly.',
@@ -169,7 +173,7 @@ const strings = {
     about_disclaimer_body:  '⚠️ This tool provides legal information only and does not replace a licensed lawyer. Always consult a qualified legal professional for advice specific to your situation. The AI responses are grounded in retrieved legal documents but may not reflect the most recent legal developments. Use this tool as a starting point, not a final authority.',
     about_tech_title:       'Technology Stack',
     feat_ai_title:    'AI-Powered',
-    feat_ai_desc:     'Groq LLM (Llama 3.3 70B) for legal analysis and chat',
+    feat_ai_desc:     'Groq LLM (gpt-oss) for legal analysis and chat',
     feat_rag_title:   'RAG Pipeline',
     feat_rag_desc:    'FAISS vector search over Pakistani law documents',
     feat_ml_title:    'Multilingual',
@@ -300,6 +304,10 @@ const strings = {
   },
 
   Urdu: {
+    privacy_note: 'درخواستیں جائزے کے لیے محفوظ ہوتی ہیں۔ اے آئی اور آواز کی سہولتیں بیرونی خدمات استعمال کرتی ہیں۔',
+    apply_consent: 'میں اپنی درخواست محفوظ کرنے اور تفویض کردہ قانونی معاونت کی ٹیم کے ساتھ شیئر کرنے سے اتفاق کرتا/کرتی ہوں۔',
+    apply_consent_required: 'درخواست جمع کرنے کے لیے آپ کی رضامندی ضروری ہے۔',
+    err_max_chars: 'براہ کرم سوال 2,000 حروف تک رکھیں۔',
     // ── Nav ─────────────────────────────────────────────────────────────────
     nav_home:      'ہوم',
     nav_chat:      'چیٹ اسسٹنٹ',
@@ -401,7 +409,7 @@ const strings = {
     form_ph_desc:        'اپنی قانونی صورتحال تفصیل سے بیان کریں…',
     form_select_city:    'شہر منتخب کریں…',
     form_select_type:    'قسم منتخب کریں…',
-    apply_info:          'آپ کی معلومات نجی رہیں گی اور آپ کی رضامندی کے بغیر صرف تفویض شدہ این جی او/وکیل کے ساتھ شیئر کی جائیں گی۔',
+    apply_info:          'یہ فارم جمع کرنے سے آپ کی رابطہ اور کیس کی تفصیلات منتظم کے جائزے اور تفویض کے لیے محفوظ ہوں گی۔ صرف ضروری معلومات درج کریں۔',
     apply_autodetected:  'آپ کے تجزیے سے خودکار طور پر معلوم ہوا',
     apply_success_title: 'درخواست جمع ہو گئی',
     apply_success_body:  'آپ کا کیس جمع ہو گیا ہے اور جلد جائزہ لیا جائے گا۔',

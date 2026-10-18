@@ -6,22 +6,27 @@ Model is loaded once and cached in module state.
 from __future__ import annotations
 import logging
 import numpy as np
-from sentence_transformers import SentenceTransformer
-from utils.config import EMBED_MODEL
+from typing import TYPE_CHECKING
+import threading
+if TYPE_CHECKING:
+    from sentence_transformers import SentenceTransformer
+from app.utils.config import EMBED_MODEL
 import functools  # streamlit removed
 
 logger = logging.getLogger(__name__)
+_model = None
+_model_lock = threading.Lock()
 
 @functools.lru_cache(maxsize=1)
 def _load_embedding_model() -> SentenceTransformer:
-
-    logger.info(f"Loading embedding model: {EMBED_MODEL}")
-
-    model = SentenceTransformer(EMBED_MODEL)
-
-    logger.info("Embedding model loaded.")
-
-    return model
+    global _model
+    with _model_lock:
+        if _model is None:
+            from sentence_transformers import SentenceTransformer
+            logger.info("Loading embedding model: %s", EMBED_MODEL)
+            _model = SentenceTransformer(EMBED_MODEL)
+            logger.info("Embedding model loaded.")
+    return _model
 
 
 def get_model() -> SentenceTransformer:

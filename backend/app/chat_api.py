@@ -26,7 +26,7 @@ import time
 from typing import Optional
 
 # Ensure project root is on sys.path when run directly
-_ROOT = os.path.dirname(os.path.abspath(__file__))
+_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _ROOT not in sys.path:
     sys.path.insert(0, _ROOT)
 
@@ -35,7 +35,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, field_validator
 
-from utils.chat_service import (
+from app.utils.chat_service import (
     chat,
     clear_session,
     get_or_create_session,
@@ -43,7 +43,7 @@ from utils.chat_service import (
     ChatResponse,
     SourceDoc,
 )
-from utils.config import GROQ_API_KEY
+from app.utils.config import GROQ_API_KEY
 
 # ── Logging ───────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -148,7 +148,7 @@ class HealthResponse(BaseModel):
 
 @app.on_event("startup")
 async def _startup() -> None:
-    from utils.rag_engine import index_ready
+    from app.utils.rag_engine import index_ready
     rag_ok  = index_ready()
     groq_ok = bool(GROQ_API_KEY)
     logger.info("Chat API starting. RAG ready=%s  Groq ready=%s", rag_ok, groq_ok)
@@ -187,7 +187,7 @@ async def post_chat(request: ChatRequest) -> ChatApiResponse:
     If the RAG index returns no results, the endpoint returns an explicit
     "insufficient information" message — the LLM is NOT called.
     """
-    from utils.rag_engine import index_ready
+    from app.utils.rag_engine import index_ready
 
     # Guard: RAG must be available
     if not index_ready():
@@ -261,7 +261,7 @@ async def get_history(session_id: str, turns: int = 5) -> dict:
 )
 async def health_check() -> HealthResponse:
     """Returns the operational status of the RAG index and Groq connection."""
-    from utils.rag_engine import index_ready
+    from app.utils.rag_engine import index_ready
     return HealthResponse(
         status="ok",
         rag_ready=index_ready(),

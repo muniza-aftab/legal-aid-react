@@ -246,6 +246,8 @@ def _extract_pdf_pypdf(path: str) -> tuple[str, int, bool]:
 
     reader     = PdfReader(path)
     num_pages  = len(reader.pages)
+    if num_pages > 50:
+        raise ValueError("Documents are limited to 50 pages per upload.")
 
     # Sample up to 5 pages to detect character-spaced artefacts
     sample = " ".join(
@@ -325,11 +327,36 @@ def extract_pdf(path: str) -> ExtractionResult:
 
     # ── Scanned PDF detection ─────────────────────────────────────────────────
     if cpp < _SCANNED_CPP_THRESHOLD:
-        warning = (
-            "This PDF appears to be scanned (image-based) and contains very little "
-            "extractable text. For best results, upload individual pages as PNG or "
-            "JPG images to enable full OCR processing."
-        )
+        if num_pages > 10:
+            raise ValueError("Scanned PDFs are limited to 10 pages. Split this file into smaller documents.")
+        import tempfile
+        import pypdfium2 as pdfium
+        ocr_pages = []
+        pdf = pdfium.PdfDocument(path)
+        try:
+            for index in range(len(pdf)):
+                page = pdf[index]
+                bitmap = page.render(scale=1.5)
+                with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as temporary:
+                    image_path = temporary.name
+                try:
+                    bitmap.to_pil().save(image_path)
+                    ocr_pages.append(extract_image(image_path))
+                finally:
+                    bitmap.close()
+                    page.close()
+                    try:
+                        os.unlink(image_path)
+                    except OSError:
+                        pass
+        finally:
+            pdf.close()
+        ocr_text = "\n\n".join(page.text for page in ocr_pages if page.text)
+        if len(ocr_text) > len(text):
+            text, method = ocr_text, "pdf_ocr"
+        warning = " ".join(dict.fromkeys(page.warning for page in ocr_pages if page.warning))
+        if not text:
+            warning = warning or "No readable text was found in this scanned PDF."
         logger.warning("Likely scanned PDF: %s (%d cpp)", os.path.basename(path), int(cpp))
 
     language   = _detect_language(text)
@@ -365,6 +392,8 @@ def extract_docx(path: str) -> ExtractionResult:
     try:
         doc        = Document(path)
         paragraphs = [_clean(p.text) for p in doc.paragraphs if p.text.strip()]
+        for table in doc.tables:
+            paragraphs.extend(" | ".join(_clean(cell.text) for cell in row.cells) for row in table.rows)
         full_text  = "\n".join(paragraphs)
     except Exception as exc:
         logger.error("DOCX extraction failed for %s: %s", path, exc)
@@ -390,6 +419,19 @@ def extract_docx(path: str) -> ExtractionResult:
 # Image / OCR extraction
 # ═══════════════════════════════════════════════════════════════════════════════
 
+def _vision_fallback(path: str) -> ExtractionResult:
+    try:
+        from app.utils.vision_ocr import extract_image_text
+        text = _clean(extract_image_text(path))
+        return ExtractionResult(text=text, method="vision_ocr", pages=1,
+            detected_language=_detect_language(text), extraction_confidence=0.55,
+            warning="AI OCR was used because local Tesseract is unavailable. Verify names, dates and numbers against the source image.")
+    except Exception as exc:
+        logger.warning("OCR unavailable: %s", type(exc).__name__)
+        return ExtractionResult(text="", method="ocr_unavailable", pages=1,
+            warning="Image text could not be extracted. Install Tesseract or configure the Groq vision OCR fallback and retry.")
+
+
 def extract_image(path: str) -> ExtractionResult:
     """
     Extract text from an image using OpenCV preprocessing + pytesseract.
@@ -402,7 +444,7 @@ def extract_image(path: str) -> ExtractionResult:
     Returns method="ocr_unavailable" (not an error) when Tesseract is not installed.
     Raises RuntimeError on image open failure or unexpected OCR errors.
     """
-    from utils.image_preprocessor import preprocess_image
+    from app.utils.image_preprocessor import preprocess_image
 
     # ── Check OCR dependencies ────────────────────────────────────────────────
     try:
@@ -410,34 +452,13 @@ def extract_image(path: str) -> ExtractionResult:
         import pytesseract                    # type: ignore
     except ImportError as exc:
         logger.warning("pytesseract/Pillow not importable — OCR unavailable: %s", exc)
-        return ExtractionResult(
-            text="",
-            method="ocr_unavailable",
-            warning=(
-                "OCR libraries are not installed. "
-                "Run: pip install pytesseract Pillow  "
-                "then install the Tesseract binary: "
-                "https://github.com/UB-Mannheim/tesseract/wiki"
-            ),
-            detected_language="Unknown",
-            extraction_confidence=0.0,
-        )
+        return _vision_fallback(path)
 
     try:
         pytesseract.get_tesseract_version()
     except pytesseract.TesseractNotFoundError:
         logger.error("Tesseract binary not found in PATH")
-        return ExtractionResult(
-            text="",
-            method="ocr_unavailable",
-            warning=(
-                "Tesseract OCR binary is not installed or not on PATH. "
-                "Download from https://github.com/UB-Mannheim/tesseract/wiki "
-                "and add to your system PATH."
-            ),
-            detected_language="Unknown",
-            extraction_confidence=0.0,
-        )
+        return _vision_fallback(path)
 
     # ── Preprocess image ──────────────────────────────────────────────────────
     preprocessed_path, prep_steps = preprocess_image(path)
@@ -450,13 +471,13 @@ def extract_image(path: str) -> ExtractionResult:
         lang_used = _TESS_LANGS
         warning   = ""
         try:
-            raw = pytesseract.image_to_string(img, lang=_TESS_LANGS)
+            raw = pytesseract.image_to_string(img, lang=_TESS_LANGS, timeout=25)
         except (pytesseract.TesseractError, OSError, MemoryError) as _ocr_err:
             logger.warning(
                 "Primary OCR failed (%s) — falling back to English-only OCR: %s",
                 type(_ocr_err).__name__, _ocr_err,
             )
-            raw       = pytesseract.image_to_string(img, lang="eng")
+            raw       = pytesseract.image_to_string(img, lang="eng", timeout=25)
             lang_used = "eng"
             warning   = (
                 "Urdu tessdata was not found or OCR encountered an error; "
@@ -513,7 +534,11 @@ def extract_text(tmp_path: str, file_type: str) -> ExtractionResult:
         ValueError   — unknown file_type
         RuntimeError — extraction failure (caller should map to HTTP 422)
     """
-    if file_type == "pdf":
+    if file_type == "txt":
+        with open(tmp_path, "r", encoding="utf-8-sig") as handle:
+            text = _clean(handle.read(_TEXT_CAP_CHARS + 1))
+        result = ExtractionResult(text=text, method="txt_text")
+    elif file_type == "pdf":
         result = extract_pdf(tmp_path)
     elif file_type == "docx":
         result = extract_docx(tmp_path)
@@ -532,5 +557,6 @@ def extract_text(tmp_path: str, file_type: str) -> ExtractionResult:
         result.text       = result.text[:_TEXT_CAP_CHARS]
         result.char_count = len(result.text)
         result.word_count = len(result.text.split())
+        result.warning = (result.warning + " Text was truncated at the 100,000-character processing limit.").strip()
 
     return result

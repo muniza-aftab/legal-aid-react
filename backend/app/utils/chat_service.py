@@ -66,10 +66,10 @@ import threading
 from dataclasses import dataclass, field
 from typing import Optional
 
-from utils.config import GROQ_API_KEY, GROQ_LLM_MODEL, GROQ_FAST_MODEL
-from utils.groq_client import call_groq_with_rotation
-from utils.rag_engine import retrieve, preprocess_query
-from utils.validator import sanitize, ValidationError
+from app.utils.config import GROQ_API_KEY, GROQ_LLM_MODEL, GROQ_FAST_MODEL
+from app.utils.groq_client import call_groq_with_rotation
+from app.utils.rag_engine import retrieve, preprocess_query
+from app.utils.validator import sanitize, ValidationError
 
 logger = logging.getLogger(__name__)
 
@@ -592,16 +592,18 @@ def _extract_case_facts(user_message: str) -> list[str]:
     Pure regex — no LLM, no hallucination risk.
     """
     facts: list[str] = []
-    msg_lower = user_message.lower()
-
-    for pattern, fact_label in _FACT_PATTERNS:
-        if not fact_label:
+    # Keep the user's actual assertion, including negation. Keyword mentions
+    # alone do not establish that evidence exists or an event happened.
+    for sentence in re.split(r"(?<=[.!?۔؟])\s+|\n+", user_message):
+        sentence = sentence.strip()
+        if not sentence or sentence.endswith(("?", "؟")):
             continue
-        if re.search(pattern, msg_lower, re.IGNORECASE):
-            if fact_label not in facts:
-                facts.append(fact_label)
-
+        if any(re.search(pattern, sentence, re.IGNORECASE) for pattern, label in _FACT_PATTERNS if label):
+            fact = "User stated: " + sentence[:350]
+            if fact not in facts:
+                facts.append(fact)
     return facts
+
 
 
 # ── Domain priority reranker ──────────────────────────────────────────────────

@@ -24,12 +24,12 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-from utils.db import get_connection
-from utils.legal_taxonomy import (
+from app.utils.db import get_connection
+from app.utils.legal_taxonomy import (
     LAWYER_EXPERTISE_AREAS,
     EXPERTISE_SUBAREAS,
 )
-from utils.config import PAKISTAN_CITIES
+from app.utils.config import PAKISTAN_CITIES
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -75,7 +75,7 @@ def _validate_lawyer_data(data: dict, require_all: bool = True) -> None:
     if require_all or "city" in data:
         city = str(data.get("city", "")).strip()
         valid = [c for c in PAKISTAN_CITIES if c != "Any City"]
-        if city and city not in valid:
+        if not city or city not in valid:
             raise ValueError(f"City must be one of: {', '.join(valid)}")
 
     if require_all or "expertise_main" in data:
@@ -97,6 +97,13 @@ def _validate_lawyer_data(data: dict, require_all: bool = True) -> None:
                     f"Invalid sub-specializations: {bad}. "
                     f"Valid for {data.get('expertise_main', '?')}: {valid_sub}"
                 )
+    if data.get("ngo_id"):
+        from app.utils.ngo_service import get_ngo
+        ngo = get_ngo(data["ngo_id"])
+        if not ngo or not ngo.get("active"):
+            raise ValueError("Select an active registered NGO.")
+        if not ngo.get("handles_all_cases") and data.get("expertise_main") not in ngo.get("categories", []):
+            raise ValueError("The lawyer's expertise must be supported by the selected NGO.")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -198,6 +205,8 @@ def update_lawyer(lawyer_id: str, data: dict) -> bool:
 def delete_lawyer(lawyer_id: str) -> bool:
     """Permanently delete a lawyer. Returns True if a row was deleted."""
     with get_connection() as conn:
+        if conn.execute("SELECT 1 FROM applications WHERE assigned_lawyer_id=? LIMIT 1", (lawyer_id,)).fetchone():
+            raise ValueError("This lawyer has case history. Mark the lawyer unavailable instead of deleting the record.")
         cur = conn.execute("DELETE FROM lawyers WHERE lawyer_id = ?", (lawyer_id,))
     return cur.rowcount > 0
 

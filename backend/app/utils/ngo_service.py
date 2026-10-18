@@ -24,8 +24,8 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-from utils.db import get_connection, NGO_CATEGORIES
-from utils.config import PAKISTAN_CITIES
+from app.utils.db import get_connection, NGO_CATEGORIES
+from app.utils.config import PAKISTAN_CITIES
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -84,7 +84,7 @@ def _validate_ngo_data(data: dict, require_all: bool = True) -> None:
 
     if require_all or "city" in data:
         city = str(data.get("city", "")).strip()
-        valid_cities = [c for c in PAKISTAN_CITIES if c != "Any City"]
+        valid_cities = [c for c in PAKISTAN_CITIES if c != "Any City"] + ["Nationwide"]
         if city and city not in valid_cities:
             raise ValueError(f"City must be one of: {', '.join(valid_cities)}")
 
@@ -228,6 +228,10 @@ def reactivate_ngo(ngo_id: str) -> bool:
 
 def delete_ngo(ngo_id: str) -> bool:
     with get_connection() as conn:
+        if conn.execute("SELECT 1 FROM lawyers WHERE ngo_id=? LIMIT 1", (ngo_id,)).fetchone() or conn.execute(
+            "SELECT 1 FROM applications WHERE assigned_ngo_id=? LIMIT 1", (ngo_id,)
+        ).fetchone():
+            raise ValueError("This NGO is linked to lawyers or case history. Deactivate it instead of deleting the record.")
         cur = conn.execute("DELETE FROM ngos WHERE ngo_id = ?", (ngo_id,))
     return cur.rowcount > 0
 
@@ -247,7 +251,7 @@ def get_all_ngos(
     if active_only:
         conditions.append("active = 1")
     if city_filter:
-        conditions.append("city = ?")
+        conditions.append("(city = ? OR city = 'Nationwide')")
         params.append(city_filter)
     if category_filter:
         conditions.append(

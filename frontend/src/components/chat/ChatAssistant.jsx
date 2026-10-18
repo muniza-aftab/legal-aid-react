@@ -38,7 +38,7 @@ export default function ChatAssistant({ caseContext }) {
         category:   caseContext.category   || '',
         risk_level: caseContext.risk_level || '',
         summary:    caseContext.summary    || '',
-        last_query: '',
+        last_query: caseContext.original_query || '',
       } : {}
       const sessId = chatSessionId || sid()
       const resp = await sendChatMessage(sessId, msg, language, ctx)

@@ -54,8 +54,8 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ROOT)
 sys.path.insert(0, os.path.join(ROOT, "app"))
 
-from utils.config import CHUNKS_FILE, FAISS_DIR, EMBED_MODEL, LAWS_DIR
-from utils.embedding_cache import (
+from app.utils.config import CHUNKS_FILE, FAISS_DIR, EMBED_MODEL, LAWS_DIR
+from app.utils.embedding_cache import (
     cache_stats,
     encode_with_cache,
     _VECTORS_PATH,
@@ -81,8 +81,8 @@ def _h2(title: str):
 # ─── Phase 1: chunks ──────────────────────────────────────────────────────────
 def phase_chunks() -> list[dict]:
     """Parse PDFs → chunks list, save chunks.json."""
-    from utils.ingest import _scan_pdf_files, _chunk_document, _infer_law_name, _infer_category
-    from utils.parser import extract_pdf
+    from app.utils.ingest import _scan_pdf_files, _chunk_document, _infer_law_name, _infer_category
+    from app.utils.parser import extract_pdf
 
     _h2("PHASE 1/3: Parse PDFs and chunk")
 
@@ -127,7 +127,7 @@ def _load_chunks() -> list[dict]:
 # ─── Phase 2: embed ───────────────────────────────────────────────────────────
 def phase_embed(chunks: list[dict] | None = None):
     """Encode chunks (cache-aware) and persist the embedding cache."""
-    from utils.embeddings import encode_texts
+    from app.utils.embeddings import encode_texts
 
     _h2("PHASE 2/3: Encode chunks (cache-aware)")
     print(f"  Model: {EMBED_MODEL}")
@@ -161,7 +161,7 @@ def phase_faiss(chunks: list[dict] | None = None, embeddings=None):
 
     if embeddings is None:
         # Reuse cache without re-encoding.
-        from utils.embeddings import encode_texts
+        from app.utils.embeddings import encode_texts
 
         embeddings = encode_with_cache(
             chunks,
@@ -305,7 +305,7 @@ def phase_auto():
 # ─── Smoke tests (only after auto/full builds) ────────────────────────────────
 def _smoke_tests():
     print("\n[VERIFY] Retrieval smoke-tests")
-    from utils.rag_engine import retrieve, index_stats
+    from app.utils.rag_engine import retrieve, index_stats
 
     stats = index_stats()
     print(f"  Vectors: {stats['vectors']:,}  Laws: {stats['laws']}  Chunks: {stats['chunks']:,}")

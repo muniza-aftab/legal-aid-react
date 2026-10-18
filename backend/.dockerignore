@@ -5,3 +5,15 @@ __pycache__
 .git
 *.bat
 *.sh
+venv
+.venv
+*.db
+*.db-*
+*.log
+backend_out.txt
+backend_err.txt
+tests
+.local
+data/faiss_index
+data/chunks.json
+data/embeddings_cache.*

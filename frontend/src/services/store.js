@@ -20,16 +20,18 @@ export const useAppStore = create(
 
       // Analysis result
       analysisResult: null,
-      setAnalysisResult: (result) => set({ analysisResult: result }),
-      clearAnalysis: () => set({ analysisResult: null }),
+      setAnalysisResult: (result) => set({ analysisResult: result, chatSessionId: null, chatSessionToken: null, chatMessages: [] }),
+      clearAnalysis: () => set({ analysisResult: null, chatSessionId: null, chatSessionToken: null, chatMessages: [] }),
 
       // Chat session
       chatSessionId: null,
+      chatSessionToken: null,
+      setChatSession: (id, token) => set({ chatSessionId: id, chatSessionToken: token }),
       chatMessages: [],
       setChatSessionId: (id) => set({ chatSessionId: id }),
       setChatMessages: (msgs) => set({ chatMessages: msgs }),
       addChatMessage: (msg) => set(s => ({ chatMessages: [...s.chatMessages, msg] })),
-      clearChat: () => set({ chatMessages: [], chatSessionId: null }),
+      clearChat: () => set({ chatMessages: [], chatSessionId: null, chatSessionToken: null }),
 
       // Query history (this session)
       queryHistory: [],

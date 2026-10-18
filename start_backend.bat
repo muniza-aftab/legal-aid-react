@@ -44,6 +44,7 @@ if not exist "data\faiss_index\index.bin" (
     echo [WARN] FAISS index not found. Building now ^(may take 5-15 min^)...
     call venv\Scripts\activate
     python build_index.py
+    if errorlevel 1 exit /b 1
 )
 
 :: ── Start server ─────────────────────────────────────────────────

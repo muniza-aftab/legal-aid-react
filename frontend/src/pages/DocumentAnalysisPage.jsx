@@ -6,6 +6,7 @@ import {
   ChevronDown, ChevronUp,
 } from 'lucide-react'
 import { api, checkHealth } from '@/services/api'
+import { errorMessage } from '@/services/errors'
 import { useAppStore } from '@/services/store'
 import { useT, isRTL } from '@/services/i18n'
 import { SectionHeader, Card, Spinner, Alert } from '@/components/ui/index'
@@ -43,8 +44,8 @@ function formatBytes(bytes) {
 
 function getRiskSeverity(text) {
   const s = text.toLowerCase()
-  if (/\b(critical|high|serious|urgent|severe|imminent|immediately|arrest|criminal|illegal|court order)\b/.test(s)) return 'critical'
-  if (/\b(moderate|medium|significant|important|caution|warning|potential|risk|deadline|expir)\b/.test(s)) return 'moderate'
+  if (/\b(critical|high|serious|urgent|severe|imminent|immediately|arrest|criminal|illegal|court order)\b|فوری|گرفتار|شدید|سنگین|فوجداری|غیر قانونی|عدالتی حکم/.test(s)) return 'critical'
+  if (/\b(moderate|medium|significant|important|caution|warning|potential|risk|deadline|expir)\b|خطر|احتیاط|تنبیہ|آخری تاریخ|مہلت/.test(s)) return 'moderate'
   return 'low'
 }
 
@@ -441,7 +442,7 @@ export default function DocumentAnalysisPage() {
       const wakeDeadline = Date.now() + 120_000
       while (Date.now() < wakeDeadline) {
         try {
-          const status = await checkHealth()
+          const status = await checkHealth({ timeout: 10000 })
           if (status?.rag_ready) break
         } catch { /* still waking up */ }
         setIsWakingServer(true)
@@ -455,7 +456,7 @@ export default function DocumentAnalysisPage() {
       })
       setAnalysis(data)
     } catch (err) {
-      setAnalysisError(err.response?.data?.detail || t('doc_analysis_error'))
+      setAnalysisError(errorMessage(err, t('doc_analysis_error')))
     } finally {
       setIsAnalyzing(false)
       setIsWakingServer(false)
@@ -685,6 +686,8 @@ export default function DocumentAnalysisPage() {
               {analysis && !isAnalyzing && (
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
 
+                  {analysis.warning && <Alert type="warning">{analysis.warning}</Alert>}
+
                   {/* Tab row */}
                   <div className="flex items-center justify-between">
                     <div
@@ -729,6 +732,13 @@ export default function DocumentAnalysisPage() {
                   {/* Analysis tab */}
                   {activeTab === 'analysis' && (
                     <>
+                      {la?.coverage?.truncated && !la?.error && (
+                        <Alert type="warning">
+                          {language === 'Urdu'
+                            ? `صرف ${la.coverage.analyzed_characters.toLocaleString()} از ${la.coverage.total_characters.toLocaleString()} حروف کا جائزہ لیا گیا۔ باقی متن کے لیے چھوٹی فائل اپلوڈ کریں۔`
+                            : `Partial review: ${la.coverage.analyzed_characters.toLocaleString()} of ${la.coverage.total_characters.toLocaleString()} characters analyzed. Upload the remaining text separately.`}
+                        </Alert>
+                      )}
                       {/* Edge cases */}
                       {analysis.legal_analysis === null && (
                         <Alert type="info">

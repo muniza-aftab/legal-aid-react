@@ -4,6 +4,7 @@ import { Mic, Trash2, Download, Search, Upload, Volume2, VolumeX, ChevronDown, C
 import { useAppStore } from '@/services/store'
 import { useT, isRTL, translateCategory } from '@/services/i18n'
 import { analyzeCase, downloadPDF, transcribeAudio, generateTTS } from '@/services/api'
+import { errorMessage } from '@/services/errors'
 import { RiskBadge, Card, Alert, Spinner, EmptyState, SectionHeader } from '@/components/ui/index'
 import NGOList from '@/components/analytics/NGOList'
 import SourcesPanel from '@/components/chat/SourcesPanel'
@@ -46,6 +47,8 @@ export default function HomePage() {
     return () => {
       audioRef.current?.pause()
       audioRef.current = null
+      if (mediaRecorderRef.current?.state === 'recording') mediaRecorderRef.current.stop()
+      mediaRecorderRef.current?.stream?.getTracks().forEach(track => track.stop())
     }
   }, [])
 
@@ -54,14 +57,18 @@ export default function HomePage() {
       setError(t('err_min_chars'))
       return
     }
+    if (query.trim().length > 2000) {
+      setError(t('err_max_chars'))
+      return
+    }
     setError('')
     setLoading(true)
     try {
       const result = await analyzeCase(query.trim(), language, city)
-      setAnalysisResult(result)
+      setAnalysisResult({ ...result, original_query: query.trim() })
       addToHistory({ query: query.trim(), result, timestamp: Date.now() })
     } catch (err) {
-      setError(err.response?.data?.detail || 'Analysis failed. Check if the backend is running.')
+      setError(errorMessage(err, t('chat_error')))
     } finally {
       setLoading(false)
     }
@@ -81,7 +88,7 @@ export default function HomePage() {
       const a = document.createElement('a')
       a.href = url; a.download = 'legal_report.pdf'; a.click()
       URL.revokeObjectURL(url)
-    } catch {}
+    } catch (err) { setError(errorMessage(err)) }
   }
 
   const handleFileUpload = async (e) => {
@@ -112,7 +119,8 @@ export default function HomePage() {
     setRecordError('')
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      const mediaRecorder = new MediaRecorder(stream)
+      const mimeType = ['audio/webm;codecs=opus', 'audio/mp4', 'audio/webm'].find(type => MediaRecorder.isTypeSupported(type))
+      const mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined)
       mediaRecorderRef.current = mediaRecorder
       audioChunksRef.current = []
 
@@ -125,7 +133,7 @@ export default function HomePage() {
         setRecording(false)
         setRecordLoading(true)
         try {
-          const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' })
+          const blob = new Blob(audioChunksRef.current, { type: mediaRecorder.mimeType })
           const result = await transcribeAudio(blob, language)
           if (result?.text) setQuery(result.text)
         } catch {
@@ -163,8 +171,9 @@ export default function HomePage() {
       audio.onpause = () => { if (!audio.ended) setTtsState('paused') }
       audio.onended = () => { URL.revokeObjectURL(url); audioRef.current = null; setTtsTarget(null); setTtsState('idle') }
       audio.onerror = () => { URL.revokeObjectURL(url); audioRef.current = null; setTtsTarget(null); setTtsState('idle') }
-      audio.play()
-    } catch {
+      await audio.play()
+    } catch (err) {
+      setError(errorMessage(err, t('chat_error')))
       setTtsTarget(null)
       setTtsState('idle')
     }
@@ -192,6 +201,8 @@ export default function HomePage() {
               onChange={e => setQuery(e.target.value)}
               placeholder={t('input_placeholder')}
               rows={7}
+              maxLength={2000}
+              aria-label={t('input_label')}
               dir={rtl ? 'rtl' : 'ltr'}
               className="input resize-none text-sm leading-relaxed"
             />
@@ -252,7 +263,7 @@ export default function HomePage() {
 
               <button
                 onClick={handleAnalyze}
-                disabled={loading || query.length < 15}
+                disabled={loading || query.trim().length < 15 || query.length > 2000}
                 className="btn-primary py-2 text-sm ml-auto"
               >
                 {loading ? <Spinner size={16} /> : <Search size={15} />}

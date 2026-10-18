@@ -82,6 +82,7 @@ export default function AIAssistantDrawer() {
   const [loading, setLoading] = useState(false)
   const bottomRef   = useRef()
   const textareaRef = useRef()
+  const panelRef = useRef()
 
   useEffect(() => { if (!chatSessionId) setChatSessionId(sid()) }, [])
 
@@ -97,11 +98,23 @@ export default function AIAssistantDrawer() {
   }
 
   useEffect(() => {
-    if (aiDrawerOpen) setTimeout(() => textareaRef.current?.focus(), 280)
+    if (!aiDrawerOpen) return
+    const previous = document.activeElement
+    const timer = setTimeout(() => textareaRef.current?.focus(), 280)
+    return () => { clearTimeout(timer); previous?.focus?.() }
   }, [aiDrawerOpen])
 
   useEffect(() => {
-    const onKey = (e) => { if (e.key === 'Escape') closeAiDrawer() }
+    const onKey = (e) => {
+      if (e.key === 'Escape') closeAiDrawer()
+      if (e.key === 'Tab' && panelRef.current) {
+        const items = [...panelRef.current.querySelectorAll('button:not([disabled]),textarea,a[href]')].filter(item => item.offsetParent !== null)
+        const first = items[0], last = items.at(-1)
+        if (e.shiftKey && (document.activeElement === first || !panelRef.current.contains(document.activeElement))) {
+          e.preventDefault(); last?.focus()
+        } else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus() }
+      }
+    }
     if (aiDrawerOpen) window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [aiDrawerOpen])
@@ -117,7 +130,7 @@ export default function AIAssistantDrawer() {
         category:   analysisResult.category   || '',
         risk_level: analysisResult.risk_level || '',
         summary:    analysisResult.summary    || '',
-        last_query: '',
+        last_query: analysisResult.original_query || '',
       } : {}
       const resp = await sendChatMessage(chatSessionId || sid(), msg, language, ctx)
       addChatMessage({
@@ -158,6 +171,10 @@ export default function AIAssistantDrawer() {
           {/* ── Drawer Panel ── always LTR for layout; RTL applied per element */}
           <motion.div
             key="ai-drawer"
+            ref={panelRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label={t('chat_title')}
             initial={{ x: slideOut }} animate={{ x: 0 }} exit={{ x: slideOut }}
             transition={{ type: 'spring', stiffness: 320, damping: 32 }}
             className={`fixed inset-y-0 ${side}-0 z-50 flex flex-col w-full md:w-[420px]`}
@@ -215,6 +232,7 @@ export default function AIAssistantDrawer() {
                 </button>
                 <button
                   onClick={closeAiDrawer}
+                  aria-label={language === 'Urdu' ? 'بند کریں' : 'Close chat'}
                   className="p-1.5 rounded-lg transition-all"
                   style={{ color: tk.iconColor }}
                   onMouseEnter={e => { e.currentTarget.style.background = tk.closeHoverBg; e.currentTarget.style.color = tk.closeHoverColor }}
@@ -264,6 +282,7 @@ export default function AIAssistantDrawer() {
             >
               <div className="flex items-end gap-2">
                 <textarea
+                  aria-label={t('chat_placeholder')}
                   ref={textareaRef}
                   value={input}
                   onChange={e => { setInput(e.target.value); resizeTextarea() }}

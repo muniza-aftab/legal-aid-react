@@ -10,7 +10,7 @@
  * Unicode strings by the time they reach the JS layer.
  */
 
-import mammoth from 'mammoth'
+import { unzipSync, strFromU8 } from 'fflate'
 import * as pdfjsLib from 'pdfjs-dist'
 import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
 
@@ -30,8 +30,17 @@ async function extractTxt(file) {
 // ─── .docx ───────────────────────────────────────────────────────────────────
 async function extractDocx(file) {
   const arrayBuffer = await file.arrayBuffer()
-  const { value } = await mammoth.extractRawText({ arrayBuffer })
-  return value                      // Plain text, Unicode-intact (Urdu safe)
+  const files = unzipSync(new Uint8Array(arrayBuffer), {
+    filter: entry => entry.name === 'word/document.xml' && entry.originalSize <= 10 * 1024 * 1024,
+  })
+  const xmlBytes = files['word/document.xml']
+  if (!xmlBytes || xmlBytes.length > 10 * 1024 * 1024) throw new Error('This Word document is damaged or too large.')
+  const xml = new DOMParser().parseFromString(strFromU8(xmlBytes), 'application/xml')
+  if (xml.querySelector('parsererror')) throw new Error('This Word document contains invalid XML.')
+  const namespace = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'
+  return [...xml.getElementsByTagNameNS(namespace, 'p')]
+    .map(paragraph => [...paragraph.getElementsByTagNameNS(namespace, 't')].map(node => node.textContent).join(''))
+    .join('\n')
 }
 
 // ─── .pdf ────────────────────────────────────────────────────────────────────
@@ -72,6 +81,7 @@ async function extractPdf(file) {
  * Throws a user-readable Error on unsupported types or parse failures.
  */
 export async function extractTextFromFile(file) {
+  if (file.size > 10 * 1024 * 1024) throw new Error('Files must be 10 MB or smaller.')
   const name = file.name.toLowerCase()
 
   if (name.endsWith('.txt'))  return extractTxt(file)

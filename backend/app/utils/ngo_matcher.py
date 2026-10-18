@@ -13,7 +13,7 @@ Changes in Phase 3.3:
 from __future__ import annotations
 import json
 import os
-from utils.config import NGO_FILE, NGO_TYPE_TO_CATEGORY
+from app.utils.config import NGO_FILE, NGO_TYPE_TO_CATEGORY
 
 __all__ = ["recommend_ngos", "get_urgent_helplines", "URGENT_HELPLINES"]
 
