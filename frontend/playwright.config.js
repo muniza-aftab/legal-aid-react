@@ -14,11 +14,12 @@ export default defineConfig({
   workers: 1,
   reporter: [['list'], ['html', { open: 'never' }]],
   use: {
+    channel: 'chromium',
     baseURL: process.env.E2E_BASE_URL || 'http://127.0.0.1:5178',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     launchOptions: {
-      args: ['--use-fake-device-for-media-stream'],
+      args: ['--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream'],
       ...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE } : {}),
     },
   },

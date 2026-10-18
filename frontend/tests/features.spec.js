@@ -13,6 +13,7 @@ test('all public pages open and refresh @readonly', async ({ page }) => {
   for (const route of ['/', '/home', '/apply', '/document-analysis', '/ngos', '/lawyers', '/emergency', '/about']) {
     const response = await page.goto(route)
     expect(response.status(), route).toBe(200)
+    await expect(page.locator('#root')).toBeVisible()
     await expect(page.locator('body')).not.toContainText('Loading Pakistan Legal Aid AI')
     await expect(page.locator('body')).not.toBeEmpty()
   }
@@ -151,4 +152,14 @@ test('mobile pages stay within the viewport @readonly', async ({ page }) => {
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1)
     expect(overflow, path).toBe(false)
   }
+  await page.goto('/')
+  await page.getByRole('button', { name: /اردو میں جاری رکھیں/ }).click()
+  await page.locator('textarea').first().fill('میرے آجر نے تین ماہ سے تنخواہ نہیں دی۔')
+  const analyze = page.getByRole('button', { name: 'کیس تجزیہ کریں', exact: true })
+  await expect(analyze).toBeEnabled()
+  const bounds = await analyze.boundingBox()
+  expect(bounds.x).toBeGreaterThanOrEqual(0)
+  expect(bounds.x + bounds.width).toBeLessThanOrEqual(390)
+  expect(bounds.width).toBeGreaterThan(150)
+  expect(bounds.height).toBeLessThan(80)
 })

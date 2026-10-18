@@ -42,3 +42,12 @@ jobs:
       - name: Browser feature checks
         working-directory: frontend
         run: npm run test:e2e
+      - name: Save browser failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: browser-test-diagnostics
+          path: |
+            frontend/playwright-report/
+            frontend/test-results/
+          retention-days: 7

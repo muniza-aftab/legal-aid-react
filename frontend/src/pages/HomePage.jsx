@@ -217,7 +217,7 @@ export default function HomePage() {
             </div>
 
             {/* Action row */}
-            <div className="flex items-center gap-2 mt-3">
+            <div className="flex flex-wrap items-center gap-2 mt-3 [&>button]:shrink-0 [&>button]:whitespace-nowrap">
               {/* Voice record */}
               <button
                 onClick={handleRecord}
@@ -264,7 +264,7 @@ export default function HomePage() {
               <button
                 onClick={handleAnalyze}
                 disabled={loading || query.trim().length < 15 || query.length > 2000}
-                className="btn-primary py-2 text-sm ml-auto"
+                className="btn-primary w-full sm:w-auto justify-center py-2 text-sm sm:ms-auto"
               >
                 {loading ? <Spinner size={16} /> : <Search size={15} />}
                 {loading ? t('analyzing_btn') : t('analyze_btn')}
